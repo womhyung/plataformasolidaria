@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Painel Administrativo - Plataforma Solidária</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Painel Administrativo</h1>
+    <nav>
+      <a href="perfil.html">Voltar ao Perfil</a>
+      <button onclick="logout()">Sair</button>
+    </nav>
+  </header>
+
+  <main>
+    <section>
+      <h2>Gerenciar Recursos</h2>
+      <p>Selecione abaixo qual entidade deseja administrar:</p>
+      <div class="admin-links">
+        <a href="doacoes.html" class="btn">Doações</a>
+        <a href="instituicoes.html" class="btn">Instituições</a>
+        <a href="familias.html" class="btn">Famílias</a>
+        <a href="entregas.html" class="btn">Entregas</a>
+        <a href="avaliacoes.html" class="btn">Avaliações</a>
+      </div>
+    </section>
+
+    <section>
+      <h2>Resumo Geral</h2>
+      <p>Visualize estatísticas consolidadas das operações:</p>
+      <canvas id="graficoAdmin"></canvas>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // Exibir gráfico geral no painel admin
+    async function carregarResumoAdmin() {
+      try {
+        const resDoacoes = await fetch(`${API_URL}/doacoes`);
+        const doacoes = await resDoacoes.json();
+
+        const dados = {};
+        doacoes.forEach(d => {
+          dados[d.alimento] = (dados[d.alimento] || 0) + d.quantidade;
+        });
+
+        const ctx = document.getElementById("graficoAdmin");
+        new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: Object.keys(dados),
+            datasets: [{
+              label: "Quantidade Doada",
+              data: Object.values(dados),
+              backgroundColor: ["#9C27B0", "#673AB7", "#FF9800", "#607D8B", "#4CAF50"]
+            }]
+          }
+        });
+      } catch (err) {
+        console.error("Erro ao carregar resumo admin", err);
+      }
+    }
+
+    if (window.location.pathname.includes("admin.html")) {
+      carregarResumoAdmin();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Instituições - Plataforma Solidária</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Gerenciar Instituições</h1>
+    <nav>
+      <a href="perfil.html">Voltar ao Perfil</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Formulário de cadastro -->
+    <section>
+      <h2>Cadastrar Instituição</h2>
+      <form id="formInstituicao">
+        <input type="text" name="nomeInstituicao" placeholder="Nome da Instituição" required>
+        <input type="text" name="endereco" placeholder="Endereço" required>
+        <button type="submit">Cadastrar</button>
+      </form>
+    </section>
+
+    <!-- Pesquisa -->
+    <section>
+      <h2>Pesquisar Instituições</h2>
+      <input type="text" id="pesquisaInstituicoes" placeholder="Pesquisar por nome ou endereço">
+    </section>
+
+    <!-- Lista -->
+    <section>
+      <h2>Lista de Instituições</h2>
+      <ul id="listaInstituicoes"></ul>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+  <script>
+    // Carregar lista ao abrir a página
+    if (window.location.pathname.includes("instituicoes.html")) {
+      carregarLista("listaInstituicoes", "instituicoes");
+    }
+
+    // Pesquisa simples
+    document.getElementById("pesquisaInstituicoes")?.addEventListener("input", async e => {
+      const termo = e.target.value.toLowerCase();
+      const list = document.getElementById("listaInstituicoes");
+      list.innerHTML = "";
+      try {
+        const res = await fetch(`${API_URL}/instituicoes`);
+        const instituicoes = await res.json();
+        instituicoes.filter(i =>
+          i.nomeInstituicao.toLowerCase().includes(termo) ||
+          i.endereco.toLowerCase().includes(termo)
+        ).forEach(i => {
+          const li = document.createElement("li");
+          li.textContent = `${i.nomeInstituicao} | ${i.endereco}`;
+
+          // Botões de editar/excluir
+          const btnEditar = document.createElement("button");
+          btnEditar.textContent = "Editar";
+          btnEditar.onclick = () => editarRegistro("instituicoes", i._id);
+
+          const btnExcluir = document.createElement("button");
+          btnExcluir.textContent = "Excluir";
+          btnExcluir.onclick = () => excluirRegistro("instituicoes", i._id, li);
+
+          li.appendChild(btnEditar);
+          li.appendChild(btnExcluir);
+          list.appendChild(li);
+        });
+      } catch (err) {
+        console.error("Erro ao pesquisar instituições", err);
+      }
+    });
+  </script>
+</body>
+</html>

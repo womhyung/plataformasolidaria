@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Avaliações - Plataforma Solidária</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Gerenciar Avaliações</h1>
+    <nav>
+      <a href="perfil.html">Voltar ao Perfil</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Formulário de cadastro -->
+    <section>
+      <h2>Enviar Avaliação</h2>
+      <form id="formAvaliacao">
+        <input type="text" name="instituicao" placeholder="Instituição" required>
+        <textarea name="feedback" placeholder="Feedback" required></textarea>
+        <button type="submit">Enviar</button>
+      </form>
+    </section>
+
+    <!-- Pesquisa -->
+    <section>
+      <h2>Pesquisar Avaliações</h2>
+      <input type="text" id="pesquisaAvaliacoes" placeholder="Pesquisar por instituição ou feedback">
+    </section>
+
+    <!-- Lista -->
+    <section>
+      <h2>Lista de Avaliações</h2>
+      <ul id="listaAvaliacoes"></ul>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+  <script>
+    // Carregar lista ao abrir a página
+    if (window.location.pathname.includes("avaliacoes.html")) {
+      carregarLista("listaAvaliacoes", "avaliacoes");
+    }
+
+    // Pesquisa simples
+    document.getElementById("pesquisaAvaliacoes")?.addEventListener("input", async e => {
+      const termo = e.target.value.toLowerCase();
+      const list = document.getElementById("listaAvaliacoes");
+      list.innerHTML = "";
+      try {
+        const res = await fetch(`${API_URL}/avaliacoes`);
+        const avaliacoes = await res.json();
+        avaliacoes.filter(a =>
+          a.instituicao.toLowerCase().includes(termo) ||
+          a.feedback.toLowerCase().includes(termo)
+        ).forEach(a => {
+          const li = document.createElement("li");
+          li.textContent = `${a.instituicao} | ${a.feedback}`;
+
+          // Botões de editar/excluir
+          const btnEditar = document.createElement("button");
+          btnEditar.textContent = "Editar";
+          btnEditar.onclick = () => editarRegistro("avaliacoes", a._id);
+
+          const btnExcluir = document.createElement("button");
+          btnExcluir.textContent = "Excluir";
+          btnExcluir.onclick = () => excluirRegistro("avaliacoes", a._id, li);
+
+          li.appendChild(btnEditar);
+          li.appendChild(btnExcluir);
+          list.appendChild(li);
+        });
+      } catch (err) {
+        console.error("Erro ao pesquisar avaliações", err);
+      }
+    });
+  </script>
+</body>
+</html>

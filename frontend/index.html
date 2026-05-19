@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Plataforma Solidária - Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>🌍 Plataforma Solidária</h1>
+  </header>
+
+  <main>
+    <!-- Login -->
+    <section id="login" class="active">
+      <h2>Login</h2>
+      <form id="formLogin">
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="password" name="senha" placeholder="Senha" required>
+        <button type="submit">Entrar</button>
+      </form>
+      <p>Não possui conta? <a href="#cadastro" onclick="showSection('cadastro')">Cadastre-se aqui</a></p>
+    </section>
+
+    <!-- Cadastro -->
+    <section id="cadastro">
+      <h2>Cadastro</h2>
+      <form id="formCadastro">
+        <input type="text" name="nome" placeholder="Nome" required>
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="password" name="senha" placeholder="Senha" required>
+        <select name="tipo" required>
+          <option value="">Selecione o tipo</option>
+          <option value="doador">Doador</option>
+          <option value="ong">ONG</option>
+          <option value="instituicao_parceira">Instituição Parceira</option>
+          <option value="instituicao_receptora">Instituição Receptora</option>
+          <option value="admin">Administrador</option>
+        </select>
+        <button type="submit">Cadastrar</button>
+      </form>
+      <p>Já possui conta? <a href="#login" onclick="showSection('login')">Faça login</a></p>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

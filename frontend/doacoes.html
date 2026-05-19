@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Doações - Plataforma Solidária</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Gerenciar Doações</h1>
+    <nav>
+      <a href="perfil.html">Voltar ao Perfil</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Formulário de cadastro -->
+    <section>
+      <h2>Registrar Doação</h2>
+      <form id="formDoacao">
+        <input type="text" name="nomeDoador" placeholder="Nome do Doador" required>
+        <input type="text" name="alimento" placeholder="Alimento" required>
+        <input type="number" name="quantidade" placeholder="Quantidade" required>
+        <input type="date" name="validade" required>
+        <input type="text" name="localizacao" placeholder="Localização" required>
+        <button type="submit">Cadastrar</button>
+      </form>
+    </section>
+
+    <!-- Pesquisa -->
+    <section>
+      <h2>Pesquisar Doações</h2>
+      <input type="text" id="pesquisaDoacoes" placeholder="Pesquisar por doador, alimento ou período">
+    </section>
+
+    <!-- Lista -->
+    <section>
+      <h2>Lista de Doações</h2>
+      <ul id="listaDoacoes"></ul>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+  <script>
+    // Carregar lista ao abrir a página
+    if (window.location.pathname.includes("doacoes.html")) {
+      carregarLista("listaDoacoes", "doacoes");
+    }
+
+    // Pesquisa simples
+    document.getElementById("pesquisaDoacoes")?.addEventListener("input", async e => {
+      const termo = e.target.value.toLowerCase();
+      const list = document.getElementById("listaDoacoes");
+      list.innerHTML = "";
+      try {
+        const res = await fetch(`${API_URL}/doacoes`);
+        const doacoes = await res.json();
+        doacoes.filter(d =>
+          d.nomeDoador.toLowerCase().includes(termo) ||
+          d.alimento.toLowerCase().includes(termo) ||
+          (d.dataRegistro && d.dataRegistro.includes(termo))
+        ).forEach(d => {
+          const li = document.createElement("li");
+          li.textContent = `${d.nomeDoador} | ${d.alimento} | ${d.quantidade} | ${d.localizacao}`;
+          
+          // Botões de editar/excluir
+          const btnEditar = document.createElement("button");
+          btnEditar.textContent = "Editar";
+          btnEditar.onclick = () => editarRegistro("doacoes", d._id);
+
+          const btnExcluir = document.createElement("button");
+          btnExcluir.textContent = "Excluir";
+          btnExcluir.onclick = () => excluirRegistro("doacoes", d._id, li);
+
+          li.appendChild(btnEditar);
+          li.appendChild(btnExcluir);
+          list.appendChild(li);
+        });
+      } catch (err) {
+        console.error("Erro ao pesquisar doações", err);
+      }
+    });
+  </script>
+</body>
+</html>
