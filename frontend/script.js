@@ -1,4 +1,4 @@
-const API_URL = "https://plataforma-solidaria-6b8a.onrender.com";
+const API_URL = "https://plataformasolidaria.onrender.com";
 let usuarioLogado = JSON.parse(localStorage.getItem("usuarioLogado")) || null;
 
 // Função para alternar seções
