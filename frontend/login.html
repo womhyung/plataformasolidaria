@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Login - Plataforma Solidária</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Login</h1>
+  <form onsubmit="login(event)">
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="password" id="senha" placeholder="Senha" required>
+    <button type="submit">Entrar</button>
+  </form>
+
+  <script src="script.js"></script>
+  <script>
+    async function login(event) {
+      event.preventDefault();
+      const email = document.getElementById("email").value;
+      const senha = document.getElementById("senha").value;
+
+      const res = await fetch(`${API_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, senha })
+      });
+
+      const data = await res.json();
+      if (data.role === "admin") {
+        window.location.href = "admin.html";
+      } else {
+        window.location.href = "perfil.html";
+      }
+    }
+  </script>
+</body>
+</html>

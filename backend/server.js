@@ -9,6 +9,7 @@ const app = express();
 // Configuração de CORS — libera acesso para qualquer origem
 app.use(cors());
 app.use(express.json());
+app.use("/auth", require("./routes/auth"));
 
 // Conexão com MongoDB Atlas
 mongoose
@@ -18,6 +19,25 @@ mongoose
   })
   .then(() => console.log("✅ Conectado ao MongoDB Atlas"))
   .catch((err) => console.error("❌ Erro de conexão:", err));
+
+const User = require("./models/User");
+
+async function criarAdmin() {
+  const existe = await User.findOne({ email: process.env.ADMIN_EMAIL });
+  if (!existe) {
+    await User.create({
+      email: process.env.ADMIN_EMAIL,
+      senha: process.env.ADMIN_PASSWORD, // depois pode criptografar
+      role: "admin"
+    });
+    console.log("✅ Usuário administrador criado via .env");
+  } else {
+    console.log("ℹ️ Usuário administrador já existe");
+  }
+}
+
+criarAdmin();
+
 
 // Rota raiz opcional (teste rápido)
 app.get("/", (req, res) => {
