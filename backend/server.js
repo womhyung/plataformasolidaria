@@ -7,12 +7,12 @@ require("dotenv").config(); // para usar variáveis de ambiente
 const app = express();
 app.use(express.json());
 
-// Configuração de CORS — importante para GitHub Pages e Render
+// Configuração de CORS — libera acesso do frontend (GitHub Pages) e do backend (Render)
 app.use(
   cors({
     origin: [
       "https://womhyung.github.io", // frontend no GitHub Pages
-      "https://plataforma-solidaria.onrender.com" // backend no Render
+      "https://plataformasolidaria.onrender.com" // backend no Render
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"]
@@ -21,13 +21,25 @@ app.use(
 
 // Conexão com MongoDB Atlas
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  })
   .then(() => console.log("✅ Conectado ao MongoDB Atlas"))
   .catch((err) => console.error("❌ Erro de conexão:", err));
 
-// Rota raiz opcional
+// Rota raiz opcional (teste rápido)
 app.get("/", (req, res) => {
   res.send("API Plataforma Solidária está rodando 🚀");
+});
+
+// Rota de saúde para testar conexão
+app.get("/ping", (req, res) => {
+  if (mongoose.connection.readyState === 1) {
+    res.json({ status: "ok", message: "Banco conectado ✅" });
+  } else {
+    res.status(500).json({ status: "error", message: "Banco não conectado ❌" });
+  }
 });
 
 // Rotas CRUD
