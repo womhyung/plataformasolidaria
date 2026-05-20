@@ -49,22 +49,27 @@
   <script>
     // Exibir gráficos no painel admin
     async function carregarResumoAdmin() {
+      console.log("🔍 carregando resumo admin...");
       try {
         // Buscar dados de doações
         const resDoacoes = await fetch(`${API_URL}/doacoes`);
         const doacoes = await resDoacoes.json();
+        console.log("Doações:", doacoes);
 
         // Buscar dados de entregas
         const resEntregas = await fetch(`${API_URL}/entregas`);
         const entregas = await resEntregas.json();
+        console.log("Entregas:", entregas);
 
         // Buscar dados de famílias
         const resFamilias = await fetch(`${API_URL}/familias`);
         const familias = await resFamilias.json();
+        console.log("Famílias:", familias);
 
         // Buscar dados de instituições
         const resInstituicoes = await fetch(`${API_URL}/instituicoes`);
         const instituicoes = await resInstituicoes.json();
+        console.log("Instituições:", instituicoes);
 
         // Consolidar estatísticas de alimentos
         const dadosDoacoes = {};
@@ -120,9 +125,8 @@
       }
     }
 
-    if (window.location.pathname.includes("admin.html")) {
-      carregarResumoAdmin();
-    }
+    // Chama sempre, sem depender do pathname
+    carregarResumoAdmin();
   </script>
 </body>
 </html>
