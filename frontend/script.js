@@ -340,3 +340,123 @@ function carregarFeedImagens() {
   if (!feed) return;
   feed.innerHTML = "<p>Feed de imagens em construção...</p>";
 }
+// Cadastro de doações
+document.getElementById("formDoacao")?.addEventListener("submit", async e => {
+  e.preventDefault();
+  const nomeDoador = e.target.querySelector("input[name='nomeDoador']").value;
+  const alimento = e.target.querySelector("input[name='alimento']").value;
+  const quantidade = e.target.querySelector("input[name='quantidade']").value;
+  const validade = e.target.querySelector("input[name='validade']").value;
+  const localizacao = e.target.querySelector("input[name='localizacao']").value;
+
+  try {
+    const res = await fetch(`${API_URL}/doacoes`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nomeDoador, alimento, quantidade, validade, localizacao })
+    });
+    if (res.ok) {
+      alert("Doação registrada com sucesso ✅");
+      e.target.reset();
+      carregarLista("listaDoacoes", "doacoes"); // recarrega lista
+    } else {
+      alert("Erro ao registrar doação ❌");
+    }
+  } catch (err) {
+    console.error("Erro no cadastro de doação:", err);
+  }
+});
+// Cadastro de entregas
+document.getElementById("formEntrega")?.addEventListener("submit", async e => {
+  e.preventDefault();
+  const voluntario = e.target.querySelector("input[name='voluntario']").value;
+  const familiaDestino = e.target.querySelector("input[name='familiaDestino']").value;
+  const alimentoEntregue = e.target.querySelector("input[name='alimentoEntregue']").value;
+
+  try {
+    const res = await fetch(`${API_URL}/entregas`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ voluntario, familiaDestino, alimentoEntregue })
+    });
+    if (res.ok) {
+      alert("Entrega registrada com sucesso ✅");
+      e.target.reset();
+      carregarLista("listaEntregas", "entregas");
+    } else {
+      alert("Erro ao registrar entrega ❌");
+    }
+  } catch (err) {
+    console.error("Erro no cadastro de entrega:", err);
+  }
+});
+// Cadastro de famílias
+document.getElementById("formFamilia")?.addEventListener("submit", async e => {
+  e.preventDefault();
+  const nomeFamilia = e.target.querySelector("input[name='nomeFamilia']").value;
+  const endereco = e.target.querySelector("input[name='endereco']").value;
+  const membros = e.target.querySelector("input[name='membros']").value;
+
+  try {
+    const res = await fetch(`${API_URL}/familias`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nomeFamilia, endereco, membros })
+    });
+    if (res.ok) {
+      alert("Família cadastrada com sucesso ✅");
+      e.target.reset();
+      carregarLista("listaFamilias", "familias");
+    } else {
+      alert("Erro ao cadastrar família ❌");
+    }
+  } catch (err) {
+    console.error("Erro no cadastro de família:", err);
+  }
+});
+// Cadastro de instituições
+document.getElementById("formInstituicao")?.addEventListener("submit", async e => {
+  e.preventDefault();
+  const nomeInstituicao = e.target.querySelector("input[name='nomeInstituicao']").value;
+  const endereco = e.target.querySelector("input[name='endereco']").value;
+
+  try {
+    const res = await fetch(`${API_URL}/instituicoes`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nomeInstituicao, endereco })
+    });
+    if (res.ok) {
+      alert("Instituição cadastrada com sucesso ✅");
+      e.target.reset();
+      carregarLista("listaInstituicoes", "instituicoes");
+    } else {
+      alert("Erro ao cadastrar instituição ❌");
+    }
+  } catch (err) {
+    console.error("Erro no cadastro de instituição:", err);
+  }
+});
+// Cadastro de avaliações
+document.getElementById("formAvaliacao")?.addEventListener("submit", async e => {
+  e.preventDefault();
+  const instituicao = e.target.querySelector("input[name='instituicao']").value;
+  const feedback = e.target.querySelector("textarea[name='feedback']").value;
+
+  try {
+    const res = await fetch(`${API_URL}/avaliacoes`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ instituicao, feedback })
+    });
+    if (res.ok) {
+      alert("Avaliação enviada com sucesso ✅");
+      e.target.reset();
+      carregarLista("listaAvaliacoes", "avaliacoes"); // recarrega lista
+    } else {
+      alert("Erro ao enviar avaliação ❌");
+    }
+  } catch (err) {
+    console.error("Erro no cadastro de avaliação:", err);
+  }
+});

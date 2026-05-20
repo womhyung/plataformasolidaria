@@ -34,13 +34,20 @@
     <section>
       <h2>Resumo Geral</h2>
       <p>Visualize estatísticas consolidadas das operações:</p>
-      <canvas id="graficoAdmin"></canvas>
+      <canvas id="graficoResumo"></canvas>
+    </section>
+
+    <!-- Tipos de alimentos doados -->
+    <section>
+      <h2>Distribuição de Alimentos Doado</h2>
+      <p>Veja a proporção de cada tipo de alimento doado:</p>
+      <canvas id="graficoAlimentos"></canvas>
     </section>
   </main>
 
   <script src="script.js"></script>
   <script>
-    // Exibir gráfico geral no painel admin
+    // Exibir gráficos no painel admin
     async function carregarResumoAdmin() {
       try {
         // Buscar dados de doações
@@ -59,43 +66,55 @@
         const resInstituicoes = await fetch(`${API_URL}/instituicoes`);
         const instituicoes = await resInstituicoes.json();
 
-        // Consolidar estatísticas
+        // Consolidar estatísticas de alimentos
         const dadosDoacoes = {};
         doacoes.forEach(d => {
           dadosDoacoes[d.alimento] = (dadosDoacoes[d.alimento] || 0) + d.quantidade;
         });
 
-        const ctx = document.getElementById("graficoAdmin").getContext("2d");
-        new Chart(ctx, {
+        // Gráfico 1: Quantidade de registros
+        const ctxResumo = document.getElementById("graficoResumo").getContext("2d");
+        new Chart(ctxResumo, {
           type: "bar",
           data: {
-            labels: [
-              ...Object.keys(dadosDoacoes),
-              "Entregas",
-              "Famílias",
-              "Instituições"
-            ],
-            datasets: [{
-              label: "Resumo Geral",
-              data: [
-                ...Object.values(dadosDoacoes),
-                entregas.length,
-                familias.length,
-                instituicoes.length
-              ],
-              backgroundColor: [
-                "#9C27B0", "#673AB7", "#FF9800", "#607D8B", "#4CAF50", "#2196F3", "#E91E63"
-              ]
-            }]
+            labels: ["Doações", "Entregas", "Famílias", "Instituições"],
+            datasets: [
+              {
+                label: "Quantidade de Registros",
+                data: [doacoes.length, entregas.length, familias.length, instituicoes.length],
+                backgroundColor: ["#9C27B0", "#FF9800", "#4CAF50", "#2196F3"]
+              }
+            ]
           },
           options: {
             responsive: true,
             plugins: {
               legend: { display: false },
-              title: { display: true, text: "Estatísticas Consolidadas" }
+              title: { display: true, text: "Resumo Geral de Registros" }
             }
           }
         });
+
+        // Gráfico 2: Distribuição de alimentos
+        const ctxAlimentos = document.getElementById("graficoAlimentos").getContext("2d");
+        new Chart(ctxAlimentos, {
+          type: "pie",
+          data: {
+            labels: Object.keys(dadosDoacoes),
+            datasets: [{
+              label: "Alimentos Doado",
+              data: Object.values(dadosDoacoes),
+              backgroundColor: ["#9C27B0", "#673AB7", "#FF9800", "#607D8B", "#4CAF50", "#2196F3", "#E91E63"]
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              title: { display: true, text: "Distribuição de Alimentos Doado" }
+            }
+          }
+        });
+
       } catch (err) {
         console.error("Erro ao carregar resumo admin", err);
       }

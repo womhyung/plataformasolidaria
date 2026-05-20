@@ -193,3 +193,16 @@ canvas {
     align-items: flex-start;
   }
 }
+/* Esconde todas as seções por padrão */
+main section {
+  display: none;
+}
+
+/* Mostra apenas a seção ativa */
+main section.active {
+  display: block;
+}
+#graficoAdmin {
+  max-width: 900px;
+  margin: 0 auto;
+}
