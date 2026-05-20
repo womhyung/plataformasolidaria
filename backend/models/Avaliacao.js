@@ -1,9 +1,10 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const AvaliacaoSchema = new mongoose.Schema({
-  instituicao: { type: String, required: true },
-  feedback: { type: String, required: true },
+const avaliacaoSchema = new mongoose.Schema({
+  instituicao: { type: String, required: true, trim: true },
+  feedback: { type: String, required: true, trim: true },
   dataRegistro: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model('Avaliacao', AvaliacaoSchema);
+// Exporta o model
+module.exports = mongoose.model("Avaliacao", avaliacaoSchema);

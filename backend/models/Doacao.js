@@ -1,13 +1,13 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const DoacaoSchema = new mongoose.Schema({
-  nomeDoador: { type: String, required: true },
-  alimento: { type: String, required: true },
-  quantidade: { type: Number, required: true },
-  validade: { type: String, required: true },
-  localizacao: { type: String, required: true },
+const doacaoSchema = new mongoose.Schema({
+  nomeDoador: { type: String, required: true, trim: true },
+  alimento: { type: String, required: true, trim: true },
+  quantidade: { type: Number, required: true, min: 1 },
+  validade: { type: String, required: true, trim: true },
+  localizacao: { type: String, required: true, trim: true },
   dataRegistro: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model('Doacao', DoacaoSchema);
-
+// Exporta o model
+module.exports = mongoose.model("Doacao", doacaoSchema);

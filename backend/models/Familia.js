@@ -1,10 +1,13 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const FamiliaSchema = new mongoose.Schema({
-  nomeFamilia: { type: String, required: true },
-  endereco: { type: String, required: true },
-  membros: { type: Number, required: true },
+const familiaSchema = new mongoose.Schema({
+  nomeFamilia: { type: String, required: true, trim: true },
+  endereco: { type: String, required: true, trim: true },
+  membros: { type: Number, required: true, min: 1 }, // pelo menos 1 membro
+  telefoneContato: { type: String, trim: true }, // opcional, útil para comunicação
+  necessidadesEspecificas: { type: String, trim: true }, // opcional, ex: restrições alimentares
   dataRegistro: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model('Familia', FamiliaSchema);
+// Exporta o model
+module.exports = mongoose.model("Familia", familiaSchema);
