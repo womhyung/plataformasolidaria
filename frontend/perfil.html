@@ -11,7 +11,7 @@
   <header>
     <h1>🌍 Plataforma Solidária</h1>
     <nav>
-      <button onclick="showSection('perfilDoador')">Meu Perfil</button>
+      <button onclick="showSection('perfilDoador')">Doador</button>
       <button onclick="showSection('perfilOng')">ONG</button>
       <button onclick="showSection('perfilInstituicaoParceira')">Instituição Parceira</button>
       <button onclick="showSection('perfilInstituicaoReceptora')">Instituição Receptora</button>
@@ -24,54 +24,48 @@
     <!-- Perfil do Doador -->
     <section id="perfilDoador" class="active">
       <h2>Minhas Doações</h2>
-      <div class="feed">
-        <ul id="listaDoacoesDoador"></ul>
-      </div>
+      <ul id="listaDoacoesDoador">
+        <li>Carregando suas doações...</li>
+      </ul>
     </section>
 
     <!-- Perfil da ONG -->
     <section id="perfilOng">
       <h2>Painel da ONG</h2>
-      <div class="painel">
-        <h3>Doações Recebidas (Mês Atual)</h3>
-        <ul id="listaDoacoesOng"></ul>
-        <h3>Entregas Realizadas (Mês Atual)</h3>
-        <ul id="listaEntregasOng"></ul>
-        <h3>Filtros</h3>
-        <input type="month" id="filtroOngMes">
-        <button onclick="filtrarOng()">Pesquisar</button>
-      </div>
+      <h3>Doações Recebidas</h3>
+      <ul id="listaDoacoesOng"></ul>
+      <h3>Entregas Realizadas</h3>
+      <ul id="listaEntregasOng"></ul>
+      <h3>Filtros</h3>
+      <input type="month" id="filtroOngMes">
+      <button onclick="filtrarOng()">Pesquisar</button>
     </section>
 
     <!-- Perfil da Instituição Parceira -->
     <section id="perfilInstituicaoParceira">
       <h2>Doações Realizadas</h2>
-      <div class="painel">
-        <canvas id="graficoInstituicaoParceira"></canvas>
-        <ul id="listaDoacoesInstituicaoParceira"></ul>
-      </div>
+      <canvas id="graficoInstituicaoParceira"></canvas>
+      <ul id="listaDoacoesInstituicaoParceira"></ul>
     </section>
 
     <!-- Perfil da Instituição Receptora -->
     <section id="perfilInstituicaoReceptora">
       <h2>Feed da Instituição</h2>
-      <div class="feed">
-        <div id="feedImagens"></div>
-        <h3>Doações Recebidas</h3>
-        <ul id="listaDoacoesInstituicaoReceptora"></ul>
-      </div>
+      <div id="feedImagens"></div>
+      <h3>Doações Recebidas</h3>
+      <ul id="listaDoacoesInstituicaoReceptora"></ul>
     </section>
 
     <!-- Perfil do Administrador -->
     <section id="perfilAdmin">
       <h2>Painel Administrativo</h2>
-      <nav class="subnav">
+      <div class="admin-links">
         <a href="doacoes.html">Gerenciar Doações</a>
         <a href="instituicoes.html">Gerenciar Instituições</a>
         <a href="familias.html">Gerenciar Famílias</a>
         <a href="entregas.html">Gerenciar Entregas</a>
         <a href="avaliacoes.html">Gerenciar Avaliações</a>
-      </nav>
+      </div>
     </section>
   </main>
 
