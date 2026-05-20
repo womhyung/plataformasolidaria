@@ -7,17 +7,8 @@ require("dotenv").config(); // para usar variáveis de ambiente
 const app = express();
 app.use(express.json());
 
-// Configuração de CORS — libera acesso do frontend (GitHub Pages) e do backend (Render)
-app.use(
-  cors({
-    origin: [
-      "https://womhyung.github.io", // frontend no GitHub Pages
-      "https://plataformasolidaria.onrender.com" // backend no Render
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"]
-  })
-);
+// Configuração de CORS — libera acesso para qualquer origem
+app.use(cors());
 
 // Conexão com MongoDB Atlas
 mongoose
