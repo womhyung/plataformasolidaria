@@ -5,10 +5,10 @@ const cors = require("cors");
 require("dotenv").config(); // para usar variáveis de ambiente
 
 const app = express();
-app.use(express.json());
 
 // Configuração de CORS — libera acesso para qualquer origem
 app.use(cors());
+app.use(express.json());
 
 // Conexão com MongoDB Atlas
 mongoose
