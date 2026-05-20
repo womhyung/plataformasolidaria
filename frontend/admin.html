@@ -5,6 +5,7 @@
   <title>Painel Administrativo - Plataforma Solidária</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <header>
@@ -16,6 +17,7 @@
   </header>
 
   <main>
+    <!-- Links de gerenciamento -->
     <section>
       <h2>Gerenciar Recursos</h2>
       <p>Selecione abaixo qual entidade deseja administrar:</p>
@@ -28,6 +30,7 @@
       </div>
     </section>
 
+    <!-- Resumo geral -->
     <section>
       <h2>Resumo Geral</h2>
       <p>Visualize estatísticas consolidadas das operações:</p>
@@ -36,29 +39,61 @@
   </main>
 
   <script src="script.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     // Exibir gráfico geral no painel admin
     async function carregarResumoAdmin() {
       try {
+        // Buscar dados de doações
         const resDoacoes = await fetch(`${API_URL}/doacoes`);
         const doacoes = await resDoacoes.json();
 
-        const dados = {};
+        // Buscar dados de entregas
+        const resEntregas = await fetch(`${API_URL}/entregas`);
+        const entregas = await resEntregas.json();
+
+        // Buscar dados de famílias
+        const resFamilias = await fetch(`${API_URL}/familias`);
+        const familias = await resFamilias.json();
+
+        // Buscar dados de instituições
+        const resInstituicoes = await fetch(`${API_URL}/instituicoes`);
+        const instituicoes = await resInstituicoes.json();
+
+        // Consolidar estatísticas
+        const dadosDoacoes = {};
         doacoes.forEach(d => {
-          dados[d.alimento] = (dados[d.alimento] || 0) + d.quantidade;
+          dadosDoacoes[d.alimento] = (dadosDoacoes[d.alimento] || 0) + d.quantidade;
         });
 
-        const ctx = document.getElementById("graficoAdmin");
+        const ctx = document.getElementById("graficoAdmin").getContext("2d");
         new Chart(ctx, {
           type: "bar",
           data: {
-            labels: Object.keys(dados),
+            labels: [
+              ...Object.keys(dadosDoacoes),
+              "Entregas",
+              "Famílias",
+              "Instituições"
+            ],
             datasets: [{
-              label: "Quantidade Doada",
-              data: Object.values(dados),
-              backgroundColor: ["#9C27B0", "#673AB7", "#FF9800", "#607D8B", "#4CAF50"]
+              label: "Resumo Geral",
+              data: [
+                ...Object.values(dadosDoacoes),
+                entregas.length,
+                familias.length,
+                instituicoes.length
+              ],
+              backgroundColor: [
+                "#9C27B0", "#673AB7", "#FF9800", "#607D8B", "#4CAF50", "#2196F3", "#E91E63"
+              ]
             }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { display: false },
+              title: { display: true, text: "Estatísticas Consolidadas" }
+            }
           }
         });
       } catch (err) {

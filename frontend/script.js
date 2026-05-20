@@ -35,7 +35,7 @@ document.getElementById("formCadastro")?.addEventListener("submit", async e => {
   }
 });
 
-// Login integrado ao backend (exemplo simples)
+// Login integrado ao backend
 document.getElementById("formLogin")?.addEventListener("submit", async e => {
   e.preventDefault();
   const email = e.target.querySelector("input[name='email']").value;
@@ -201,12 +201,66 @@ async function carregarInstituicaoReceptora() {
   }
 }
 
-// Executar ao abrir index.html
-if (window.location.pathname.includes("index.html")) {
-  carregarDoacoesPublicas();
+// 🔹 Funções genéricas para CRUD (avaliacoes.html e outras páginas)
+
+// Carregar lista genérica
+async function carregarLista(elementId, collection) {
+  const lista = document.getElementById(elementId);
+  lista.innerHTML = "<li>Carregando...</li>";
+  try {
+    const res = await fetch(`${API_URL}/${collection}`);
+    const dados = await res.json();
+    lista.innerHTML = "";
+    dados.forEach(item => {
+      const li = document.createElement("li");
+      li.textContent = `${item.instituicao || item.nomeDoador} | ${item.feedback || item.alimento}`;
+
+      const btnEditar = document.createElement("button");
+      btnEditar.textContent = "Editar";
+      btnEditar.onclick = () => editarRegistro(collection, item._id);
+
+      const btnExcluir = document.createElement("button");
+      btnExcluir.textContent = "Excluir";
+      btnExcluir.onclick = () => excluirRegistro(collection, item._id, li);
+
+      li.appendChild(btnEditar);
+      li.appendChild(btnExcluir);
+      lista.appendChild(li);
+    });
+  } catch (err) {
+    lista.innerHTML = "<li>Erro ao carregar ❌</li>";
+    console.error("Erro ao carregar lista:", err);
+  }
+}
+// Editar registro
+async function editarRegistro(collection, id) {
+  const novoValor = prompt("Digite o novo valor:");
+  if (!novoValor) return;
+  try {
+    const res = await fetch(`${API_URL}/${collection}/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ feedback: novoValor })
+    });
+    if (res.ok) {
+      alert("Registro atualizado ✅");
+      carregarLista("listaAvaliacoes", collection);
+    }
+  } catch (err) {
+    console.error("Erro ao editar registro:", err);
+  }
 }
 
-// Executar ao abrir perfil.html
-if (window.location.pathname.includes("perfil.html")) {
-  carregarPerfil();
+// Excluir registro
+async function excluirRegistro(collection, id, li) {
+  if (!confirm("Deseja realmente excluir?")) return;
+  try {
+    const res = await fetch(`${API_URL}/${collection}/${id}`, { method: "DELETE" });
+    if (res.ok) {
+      li.remove();
+      alert("Registro excluído ✅");
+    }
+  } catch (err) {
+    console.error("Erro ao excluir registro:", err);
+  }
 }
