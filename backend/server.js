@@ -10,36 +10,40 @@ const app = express();
 // Configuração de CORS — libera acesso para qualquer origem
 app.use(cors());
 app.use(express.json());
-app.use("/auth", require("./routes/auth"));
 
-// Conexão com MongoDB Atlas
-mongoose
-  .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-  })
-  .then(() => console.log("✅ Conectado ao MongoDB Atlas"))
-  .catch((err) => console.error("❌ Erro de conexão:", err));
+
+// Conexão com MongoDB
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+}).then(() => {
+  console.log("✅ Conectado ao MongoDB");
+  criarAdmin(); // cria admin ao iniciar
+}).catch(err => console.error("❌ Erro ao conectar:", err));
 
 const User = require("./models/User");
 
+// Função para criar admin automaticamente
 async function criarAdmin() {
-  const existe = await User.findOne({ email: process.env.ADMIN_EMAIL });
-  if (!existe) {
-    await User.create({
-      email: process.env.ADMIN_EMAIL,
-      senha: process.env.ADMIN_PASSWORD, // depois pode criptografar
-      role: "admin"
-    });
-    console.log("✅ Usuário administrador criado via .env");
-  } else {
-    console.log("ℹ️ Usuário administrador já existe");
+  try {
+    const existe = await User.findOne({ email: process.env.ADMIN_EMAIL });
+    if (!existe) {
+      const senhaCriptografada = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
+      await User.create({
+        email: process.env.ADMIN_EMAIL,
+        senha: senhaCriptografada,
+        role: "admin"
+      });
+      console.log("✅ Usuário administrador criado via .env");
+    } else {
+      console.log("ℹ️ Usuário administrador já existe");
+    }
+  } catch (err) {
+    console.error("❌ Erro ao criar admin:", err);
   }
 }
 
-criarAdmin();
-
-
+app.use("/auth", require("./routes/auth"));
 // Rota raiz opcional (teste rápido)
 app.get("/", (req, res) => {
   res.send("API Plataforma Solidária está rodando 🚀");

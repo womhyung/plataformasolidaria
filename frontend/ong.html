@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Painel da ONG - Plataforma Solidária</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Painel da ONG</h1>
+    <nav>
+      <a href="perfil.html">Voltar ao Perfil</a>
+      <button onclick="logout()">Sair</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Cadastro de doações -->
+    <section>
+      <h2>Registrar Nova Doação</h2>
+      <form onsubmit="cadastrarDoacao(event)">
+        <input type="text" id="alimento" placeholder="Tipo de alimento" required>
+        <input type="number" id="quantidade" placeholder="Quantidade" required>
+        <button type="submit">Cadastrar</button>
+      </form>
+    </section>
+
+    <!-- Lista de doações -->
+    <section>
+      <h2>Minhas Doações</h2>
+      <ul id="listaDoacoes"></ul>
+    </section>
+  </main>
+
+  <script>
+    const API_URL = "https://seu-backend.onrender.com"; // ajuste para o endereço real
+
+    function logout() {
+      alert("Você saiu do sistema ✅");
+      window.location.href = "login.html";
+    }
+
+    async function cadastrarDoacao(event) {
+      event.preventDefault();
+      const alimento = document.getElementById("alimento").value;
+      const quantidade = document.getElementById("quantidade").value;
+
+      try {
+        const res = await fetch(`${API_URL}/doacoes`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ alimento, quantidade })
+        });
+
+        if (res.status !== 201 && res.status !== 200) {
+          const erro = await res.json();
+          alert(erro.message || "Erro ao cadastrar doação ❌");
+          return;
+        }
+
+        alert("Doação registrada com sucesso ✅");
+        document.getElementById("alimento").value = "";
+        document.getElementById("quantidade").value = "";
+        carregarDoacoes();
+      } catch (err) {
+        console.error("Erro ao cadastrar doação", err);
+        alert("Erro ao cadastrar doação ❌");
+      }
+    }
+
+    async function carregarDoacoes() {
+      try {
+        const res = await fetch(`${API_URL}/doacoes`);
+        const doacoes = await res.json();
+
+        const lista = document.getElementById("listaDoacoes");
+        lista.innerHTML = "";
+        doacoes.forEach(d => {
+          const li = document.createElement("li");
+          li.textContent = `${d.alimento} - ${d.quantidade}`;
+          lista.appendChild(li);
+        });
+      } catch (err) {
+        console.error("Erro ao carregar doações", err);
+        alert("Erro ao carregar doações ❌");
+      }
+    }
+
+    // Carregar doações ao abrir a página
+    carregarDoacoes();
+  </script>
+</body>
+</html>

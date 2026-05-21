@@ -13,24 +13,40 @@
     <button type="submit">Entrar</button>
   </form>
 
-  <script src="script.js"></script>
   <script>
+    // Defina a URL da sua API (Render ou localhost)
+    const API_URL = "https://plataformasolidaria.onrender.com"; // ajuste para o endereço real
+
     async function login(event) {
       event.preventDefault();
       const email = document.getElementById("email").value;
       const senha = document.getElementById("senha").value;
 
-      const res = await fetch(`${API_URL}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, senha })
-      });
+      try {
+        const res = await fetch(`${API_URL}/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, senha })
+        });
 
-      const data = await res.json();
-      if (data.role === "admin") {
-        window.location.href = "admin.html";
-      } else {
-        window.location.href = "perfil.html";
+        const data = await res.json();
+
+        if (res.status !== 200) {
+          alert(data.message || "Erro no login ❌");
+          return;
+        }
+
+        // Redireciona conforme o tipo de usuário
+        if (data.role === "admin") {
+          window.location.href = "admin.html";
+        } else if (data.role === "ong") {
+          window.location.href = "ong.html";
+        } else {
+          window.location.href = "perfil.html";
+        }
+      } catch (err) {
+        console.error("❌ Erro na requisição:", err);
+        alert("Erro de conexão com o servidor");
       }
     }
   </script>
