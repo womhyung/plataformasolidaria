@@ -11,6 +11,7 @@
     <h1>Gerenciar Instituições</h1>
     <nav>
       <a href="perfil.html">Voltar ao Perfil</a>
+      <button onclick="logout()">Sair</button>
     </nav>
   </header>
 
@@ -18,9 +19,9 @@
     <!-- Formulário de cadastro -->
     <section>
       <h2>Cadastrar Instituição</h2>
-      <form id="formInstituicao">
-        <input type="text" name="nomeInstituicao" placeholder="Nome da Instituição" required>
-        <input type="text" name="endereco" placeholder="Endereço" required>
+      <form id="formInstituicao" onsubmit="cadastrarInstituicao(event)">
+        <input type="text" id="nomeInstituicao" placeholder="Nome da Instituição" required>
+        <input type="text" id="endereco" placeholder="Endereço" required>
         <button type="submit">Cadastrar</button>
       </form>
     </section>
@@ -38,45 +39,148 @@
     </section>
   </main>
 
-  <script src="script.js"></script>
   <script>
-    // Carregar lista ao abrir a página
-    if (window.location.pathname.includes("instituicoes.html")) {
-      carregarLista("listaInstituicoes", "instituicoes");
+    const API_URL = "https://plataformasolidaria.onrender.com"; // ajuste para o endereço real
+
+    function logout() {
+      alert("Você saiu do sistema ✅");
+      window.location.href = "login.html";
     }
 
-    // Pesquisa simples
-    document.getElementById("pesquisaInstituicoes")?.addEventListener("input", async e => {
-      const termo = e.target.value.toLowerCase();
-      const list = document.getElementById("listaInstituicoes");
-      list.innerHTML = "";
+    async function cadastrarInstituicao(event) {
+      event.preventDefault();
+      const nomeInstituicao = document.getElementById("nomeInstituicao").value;
+      const endereco = document.getElementById("endereco").value;
+
+      try {
+        const res = await fetch(`${API_URL}/instituicoes`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nomeInstituicao, endereco })
+        });
+
+        if (res.status === 201 || res.status === 200) {
+          alert("Instituição cadastrada com sucesso ✅");
+          document.getElementById("formInstituicao").reset();
+          carregarInstituicoes();
+        } else {
+          const erro = await res.json();
+          alert(erro.message || "Erro ao cadastrar instituição ❌");
+        }
+      } catch (err) {
+        console.error("Erro ao cadastrar instituição", err);
+        alert("Erro ao cadastrar instituição ❌");
+      }
+    }
+
+    async function carregarInstituicoes() {
       try {
         const res = await fetch(`${API_URL}/instituicoes`);
         const instituicoes = await res.json();
-        instituicoes.filter(i =>
-          i.nomeInstituicao.toLowerCase().includes(termo) ||
-          i.endereco.toLowerCase().includes(termo)
-        ).forEach(i => {
+
+        const lista = document.getElementById("listaInstituicoes");
+        lista.innerHTML = "";
+
+        instituicoes.forEach(i => {
           const li = document.createElement("li");
           li.textContent = `${i.nomeInstituicao} | ${i.endereco}`;
 
           // Botões de editar/excluir
           const btnEditar = document.createElement("button");
           btnEditar.textContent = "Editar";
-          btnEditar.onclick = () => editarRegistro("instituicoes", i._id);
+          btnEditar.onclick = () => editarInstituicao(i._id);
 
           const btnExcluir = document.createElement("button");
           btnExcluir.textContent = "Excluir";
-          btnExcluir.onclick = () => excluirRegistro("instituicoes", i._id, li);
+          btnExcluir.onclick = () => excluirInstituicao(i._id, li);
 
           li.appendChild(btnEditar);
           li.appendChild(btnExcluir);
-          list.appendChild(li);
+          lista.appendChild(li);
         });
       } catch (err) {
-        console.error("Erro ao pesquisar instituições", err);
+        console.error("Erro ao carregar instituições", err);
+        alert("Erro ao carregar instituições ❌");
       }
+    }
+
+    async function editarInstituicao(id) {
+      const novoNome = prompt("Digite o novo nome da instituição:");
+      const novoEndereco = prompt("Digite o novo endereço:");
+
+      if (!novoNome || !novoEndereco) return;
+
+      try {
+        const res = await fetch(`${API_URL}/instituicoes/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nomeInstituicao: novoNome, endereco: novoEndereco })
+        });
+
+        if (res.status === 200) {
+          alert("Instituição atualizada com sucesso ✅");
+          carregarInstituicoes();
+        } else {
+          alert("Erro ao atualizar instituição ❌");
+        }
+      } catch (err) {
+        console.error("Erro ao editar instituição", err);
+        alert("Erro ao editar instituição ❌");
+      }
+    }
+
+    async function excluirInstituicao(id, li) {
+      if (!confirm("Tem certeza que deseja excluir esta instituição?")) return;
+
+      try {
+        const res = await fetch(`${API_URL}/instituicoes/${id}`, {
+          method: "DELETE"
+        });
+
+        if (res.status === 200) {
+          alert("Instituição excluída com sucesso ✅");
+          li.remove();
+        } else {
+          alert("Erro ao excluir instituição ❌");
+        }
+      } catch (err) {
+        console.error("Erro ao excluir instituição", err);
+        alert("Erro ao excluir instituição ❌");
+      }
+    }
+
+    // Pesquisa simples
+    document.getElementById("pesquisaInstituicoes")?.addEventListener("input", async e => {
+      const termo = e.target.value.toLowerCase();
+      const res = await fetch(`${API_URL}/instituicoes`);
+      const instituicoes = await res.json();
+
+      const list = document.getElementById("listaInstituicoes");
+      list.innerHTML = "";
+
+      instituicoes.filter(i =>
+        i.nomeInstituicao.toLowerCase().includes(termo) ||
+        i.endereco.toLowerCase().includes(termo)
+      ).forEach(i => {
+        const li = document.createElement("li");
+        li.textContent = `${i.nomeInstituicao} | ${i.endereco}`;
+
+        const btnEditar = document.createElement("button");
+        btnEditar.textContent = "Editar";
+        btnEditar.onclick = () => editarInstituicao(i._id);
+
+        const btnExcluir = document.createElement("button");
+        btnExcluir.textContent = "Excluir";
+        btnExcluir.onclick = () => excluirInstituicao(i._id, li);
+
+        li.appendChild(btnEditar);
+        li.appendChild(btnExcluir);
+        list.appendChild(li);
+      });
     });
+
+    // Carregar lista ao abrir a página
+    carregarInstituicoes();
   </script>
 </body>
 </html>

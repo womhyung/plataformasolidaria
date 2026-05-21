@@ -11,6 +11,7 @@
     <h1>Gerenciar Avaliações</h1>
     <nav>
       <a href="perfil.html">Voltar ao Perfil</a>
+      <button onclick="logout()">Sair</button>
     </nav>
   </header>
 
@@ -18,9 +19,9 @@
     <!-- Formulário de cadastro -->
     <section>
       <h2>Enviar Avaliação</h2>
-      <form id="formAvaliacao">
-        <input type="text" name="instituicao" placeholder="Instituição" required>
-        <textarea name="feedback" placeholder="Feedback" required></textarea>
+      <form id="formAvaliacao" onsubmit="cadastrarAvaliacao(event)">
+        <input type="text" id="instituicao" placeholder="Instituição" required>
+        <textarea id="feedback" placeholder="Feedback" required></textarea>
         <button type="submit">Enviar</button>
       </form>
     </section>
@@ -38,45 +39,147 @@
     </section>
   </main>
 
-  <script src="script.js"></script>
   <script>
-    // Carregar lista ao abrir a página
-    if (window.location.pathname.includes("avaliacoes.html")) {
-      carregarLista("listaAvaliacoes", "avaliacoes");
+    const API_URL = "https://plataformasolidaria.onrender.com"; // seu backend no Render
+
+    function logout() {
+      alert("Você saiu do sistema ✅");
+      window.location.href = "login.html";
+    }
+
+    async function cadastrarAvaliacao(event) {
+      event.preventDefault();
+      const instituicao = document.getElementById("instituicao").value;
+      const feedback = document.getElementById("feedback").value;
+
+      try {
+        const res = await fetch(`${API_URL}/avaliacoes`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ instituicao, feedback })
+        });
+
+        if (res.status === 201 || res.status === 200) {
+          alert("Avaliação enviada com sucesso ✅");
+          document.getElementById("formAvaliacao").reset();
+          carregarAvaliacoes();
+        } else {
+          const erro = await res.json();
+          alert(erro.message || "Erro ao enviar avaliação ❌");
+        }
+      } catch (err) {
+        console.error("Erro ao enviar avaliação", err);
+        alert("Erro ao enviar avaliação ❌");
+      }
+    }
+
+    async function carregarAvaliacoes() {
+      try {
+        const res = await fetch(`${API_URL}/avaliacoes`);
+        const avaliacoes = await res.json();
+
+        const lista = document.getElementById("listaAvaliacoes");
+        lista.innerHTML = "";
+
+        avaliacoes.forEach(a => {
+          const li = document.createElement("li");
+          li.textContent = `${a.instituicao} | ${a.feedback}`;
+
+          const btnEditar = document.createElement("button");
+          btnEditar.textContent = "Editar";
+          btnEditar.onclick = () => editarAvaliacao(a._id);
+
+          const btnExcluir = document.createElement("button");
+          btnExcluir.textContent = "Excluir";
+          btnExcluir.onclick = () => excluirAvaliacao(a._id, li);
+
+          li.appendChild(btnEditar);
+          li.appendChild(btnExcluir);
+          lista.appendChild(li);
+        });
+      } catch (err) {
+        console.error("Erro ao carregar avaliações", err);
+        alert("Erro ao carregar avaliações ❌");
+      }
+    }
+
+    async function editarAvaliacao(id) {
+      const novaInstituicao = prompt("Digite o novo nome da instituição:");
+      const novoFeedback = prompt("Digite o novo feedback:");
+
+      if (!novaInstituicao || !novoFeedback) return;
+
+      try {
+        const res = await fetch(`${API_URL}/avaliacoes/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ instituicao: novaInstituicao, feedback: novoFeedback })
+        });
+
+        if (res.status === 200) {
+          alert("Avaliação atualizada com sucesso ✅");
+          carregarAvaliacoes();
+        } else {
+          alert("Erro ao atualizar avaliação ❌");
+        }
+      } catch (err) {
+        console.error("Erro ao editar avaliação", err);
+        alert("Erro ao editar avaliação ❌");
+      }
+    }
+
+    async function excluirAvaliacao(id, li) {
+      if (!confirm("Tem certeza que deseja excluir esta avaliação?")) return;
+
+      try {
+        const res = await fetch(`${API_URL}/avaliacoes/${id}`, {
+          method: "DELETE"
+        });
+
+        if (res.status === 200) {
+          alert("Avaliação excluída com sucesso ✅");
+          li.remove();
+        } else {
+          alert("Erro ao excluir avaliação ❌");
+        }
+      } catch (err) {
+        console.error("Erro ao excluir avaliação", err);
+        alert("Erro ao excluir avaliação ❌");
+      }
     }
 
     // Pesquisa simples
     document.getElementById("pesquisaAvaliacoes")?.addEventListener("input", async e => {
       const termo = e.target.value.toLowerCase();
+      const res = await fetch(`${API_URL}/avaliacoes`);
+      const avaliacoes = await res.json();
+
       const list = document.getElementById("listaAvaliacoes");
       list.innerHTML = "";
-      try {
-        const res = await fetch(`${API_URL}/avaliacoes`);
-        const avaliacoes = await res.json();
-        avaliacoes.filter(a =>
-          a.instituicao.toLowerCase().includes(termo) ||
-          a.feedback.toLowerCase().includes(termo)
-        ).forEach(a => {
-          const li = document.createElement("li");
-          li.textContent = `${a.instituicao} | ${a.feedback}`;
 
-          // Botões de editar/excluir
-          const btnEditar = document.createElement("button");
-          btnEditar.textContent = "Editar";
-          btnEditar.onclick = () => editarRegistro("avaliacoes", a._id);
+      avaliacoes.filter(a =>
+        a.instituicao.toLowerCase().includes(termo) ||
+        a.feedback.toLowerCase().includes(termo)
+      ).forEach(a => {
+        const li = document.createElement("li");
+        li.textContent = `${a.instituicao} | ${a.feedback}`;
 
-          const btnExcluir = document.createElement("button");
-          btnExcluir.textContent = "Excluir";
-          btnExcluir.onclick = () => excluirRegistro("avaliacoes", a._id, li);
+        const btnEditar = document.createElement("button");
+        btnEditar.textContent = "Editar";
+        btnEditar.onclick = () => editarAvaliacao(a._id);
 
-          li.appendChild(btnEditar);
-          li.appendChild(btnExcluir);
-          list.appendChild(li);
-        });
-      } catch (err) {
-        console.error("Erro ao pesquisar avaliações", err);
-      }
+        const btnExcluir = document.createElement("button");
+        btnExcluir.textContent = "Excluir";
+        btnExcluir.onclick = () => excluirAvaliacao(a._id, li);
+
+        li.appendChild(btnEditar);
+        li.appendChild(btnExcluir);
+        list.appendChild(li);
+      });
     });
+
+    // Carregar lista ao abrir a página
+    carregarAvaliacoes();
   </script>
 </body>
 </html>
