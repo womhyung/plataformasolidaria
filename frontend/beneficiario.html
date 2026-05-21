@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Painel do Beneficiário - Plataforma Solidária</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Painel do Beneficiário</h1>
+    <nav>
+      <a href="perfil.html">Voltar ao Perfil</a>
+      <button onclick="logout()">Sair</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Entregas pendentes -->
+    <section>
+      <h2>Minhas Entregas</h2>
+      <p>Acompanhe abaixo suas entregas e confirme o recebimento:</p>
+      <ul id="listaEntregas"></ul>
+    </section>
+  </main>
+
+  <script>
+    const API_URL = "https://plataformasolidaria.onrender.com"; // ajuste para o endereço real
+
+    function logout() {
+      alert("Você saiu do sistema ✅");
+      window.location.href = "login.html";
+    }
+
+    async function carregarEntregas() {
+      try {
+        const res = await fetch(`${API_URL}/entregas`);
+        const entregas = await res.json();
+
+        const lista = document.getElementById("listaEntregas");
+        lista.innerHTML = "";
+
+        entregas.forEach(e => {
+          const li = document.createElement("li");
+          li.innerHTML = `
+            <strong>${e.alimento}</strong> - Quantidade: ${e.quantidade} 
+            | Status: ${e.status || "Pendente"}
+            <button onclick="confirmarRecebimento('${e._id}')">Confirmar Recebimento</button>
+          `;
+          lista.appendChild(li);
+        });
+      } catch (err) {
+        console.error("Erro ao carregar entregas", err);
+        alert("Erro ao carregar entregas ❌");
+      }
+    }
+
+    async function confirmarRecebimento(id) {
+      try {
+        const res = await fetch(`${API_URL}/entregas/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "Recebido" })
+        });
+
+        if (res.status === 200) {
+          alert("Entrega confirmada com sucesso ✅");
+          carregarEntregas();
+        } else {
+          alert("Erro ao confirmar entrega ❌");
+        }
+      } catch (err) {
+        console.error("Erro ao confirmar entrega", err);
+        alert("Erro ao confirmar entrega ❌");
+      }
+    }
+
+    // Carregar entregas ao abrir a página
+    carregarEntregas();
+  </script>
+</body>
+</html>
