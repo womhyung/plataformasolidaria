@@ -1,6 +1,7 @@
 // Importações
 const express = require("express");
 const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
 const cors = require("cors");
 require("dotenv").config(); // para usar variáveis de ambiente
 
