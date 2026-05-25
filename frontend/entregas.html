@@ -19,10 +19,10 @@
     <!-- Formulário de cadastro -->
     <section>
       <h2>Registrar Entrega</h2>
-      <form id="formEntrega" onsubmit="cadastrarEntrega(event)">
-        <input type="text" id="voluntario" placeholder="Voluntário Responsável" required>
-        <input type="text" id="familiaDestino" placeholder="Família Destino" required>
-        <input type="text" id="alimentoEntregue" placeholder="Alimento Entregue" required>
+      <form id="formEntrega">
+        <input type="text" name="voluntario" placeholder="Voluntário Responsável" required>
+        <input type="text" name="familiaDestino" placeholder="Família Destino" required>
+        <input type="text" name="alimentoEntregue" placeholder="Alimento Entregue" required>
         <button type="submit">Cadastrar</button>
       </form>
     </section>
@@ -40,150 +40,42 @@
     </section>
   </main>
 
+  <script src="script.js"></script>
   <script>
-    const API_URL = "https://plataformasolidaria.onrender.com"; // seu backend no Render
+    const API_URL = "https://plataformasolidaria.onrender.com";
 
     function logout() {
+      localStorage.removeItem("usuarioLogado");
       alert("Você saiu do sistema ✅");
       window.location.href = "login.html";
-    }
-
-    async function cadastrarEntrega(event) {
-      event.preventDefault();
-      const voluntario = document.getElementById("voluntario").value;
-      const familiaDestino = document.getElementById("familiaDestino").value;
-      const alimentoEntregue = document.getElementById("alimentoEntregue").value;
-
-      try {
-        const res = await fetch(`${API_URL}/entregas`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ voluntario, familiaDestino, alimentoEntregue })
-        });
-
-        if (res.status === 201 || res.status === 200) {
-          alert("Entrega registrada com sucesso ✅");
-          document.getElementById("formEntrega").reset();
-          carregarEntregas();
-        } else {
-          const erro = await res.json();
-          alert(erro.message || "Erro ao cadastrar entrega ❌");
-        }
-      } catch (err) {
-        console.error("Erro ao cadastrar entrega", err);
-        alert("Erro ao cadastrar entrega ❌");
-      }
-    }
-
-    async function carregarEntregas() {
-      try {
-        const res = await fetch(`${API_URL}/entregas`);
-        const entregas = await res.json();
-
-        const lista = document.getElementById("listaEntregas");
-        lista.innerHTML = "";
-
-        entregas.forEach(en => {
-          const li = document.createElement("li");
-          li.textContent = `${en.voluntario} | ${en.familiaDestino} | ${en.alimentoEntregue}`;
-
-          const btnEditar = document.createElement("button");
-          btnEditar.textContent = "Editar";
-          btnEditar.onclick = () => editarEntrega(en._id);
-
-          const btnExcluir = document.createElement("button");
-          btnExcluir.textContent = "Excluir";
-          btnExcluir.onclick = () => excluirEntrega(en._id, li);
-
-          li.appendChild(btnEditar);
-          li.appendChild(btnExcluir);
-          lista.appendChild(li);
-        });
-      } catch (err) {
-        console.error("Erro ao carregar entregas", err);
-        alert("Erro ao carregar entregas ❌");
-      }
-    }
-
-    async function editarEntrega(id) {
-      const novoVoluntario = prompt("Digite o novo voluntário responsável:");
-      const novaFamilia = prompt("Digite a nova família destino:");
-      const novoAlimento = prompt("Digite o novo alimento entregue:");
-
-      if (!novoVoluntario || !novaFamilia || !novoAlimento) return;
-
-      try {
-        const res = await fetch(`${API_URL}/entregas/${id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ voluntario: novoVoluntario, familiaDestino: novaFamilia, alimentoEntregue: novoAlimento })
-        });
-
-        if (res.status === 200) {
-          alert("Entrega atualizada com sucesso ✅");
-          carregarEntregas();
-        } else {
-          alert("Erro ao atualizar entrega ❌");
-        }
-      } catch (err) {
-        console.error("Erro ao editar entrega", err);
-        alert("Erro ao editar entrega ❌");
-      }
-    }
-
-    async function excluirEntrega(id, li) {
-      if (!confirm("Tem certeza que deseja excluir esta entrega?")) return;
-
-      try {
-        const res = await fetch(`${API_URL}/entregas/${id}`, {
-          method: "DELETE"
-        });
-
-        if (res.status === 200) {
-          alert("Entrega excluída com sucesso ✅");
-          li.remove();
-        } else {
-          alert("Erro ao excluir entrega ❌");
-        }
-      } catch (err) {
-        console.error("Erro ao excluir entrega", err);
-        alert("Erro ao excluir entrega ❌");
-      }
     }
 
     // Pesquisa simples
     document.getElementById("pesquisaEntregas")?.addEventListener("input", async e => {
       const termo = e.target.value.toLowerCase();
-      const res = await fetch(`${API_URL}/entregas`);
-      const entregas = await res.json();
+      try {
+        const res = await fetch(`${API_URL}/entregas`);
+        const entregas = await res.json();
 
-      const list = document.getElementById("listaEntregas");
-      list.innerHTML = "";
+        const list = document.getElementById("listaEntregas");
+        list.innerHTML = "";
 
-      entregas.filter(en =>
-        en.voluntario.toLowerCase().includes(termo) ||
-        en.familiaDestino.toLowerCase().includes(termo) ||
-        en.alimentoEntregue.toLowerCase().includes(termo)
-      ).forEach(en => {
-        const li = document.createElement("li");
-        li.textContent = `${en.voluntario} | ${en.familiaDestino} | ${en.alimentoEntregue}`;
-
-        const btnEditar = document.createElement("button");
-        btnEditar.textContent = "Editar";
-        btnEditar.onclick = () => editarEntrega(en._id);
-
-        const btnExcluir = document.createElement("button");
-        btnExcluir.textContent = "Excluir";
-        btnExcluir.onclick = () => excluirEntrega(en._id, li);
-
-        li.appendChild(btnEditar);
-        li.appendChild(btnExcluir);
-        list.appendChild(li);
-      });
+        entregas.filter(en =>
+          en.voluntario.toLowerCase().includes(termo) ||
+          en.familiaDestino.toLowerCase().includes(termo) ||
+          en.alimentoEntregue.toLowerCase().includes(termo)
+        ).forEach(en => {
+          const li = document.createElement("li");
+          li.textContent = `${en.voluntario} | ${en.familiaDestino} | ${en.alimentoEntregue}`;
+          list.appendChild(li);
+        });
+      } catch (err) {
+        console.error("Erro na pesquisa de entregas", err);
+      }
     });
 
     // Carregar lista ao abrir a página
-    carregarEntregas();
+    carregarLista("listaEntregas", "entregas");
   </script>
 </body>
 </html>

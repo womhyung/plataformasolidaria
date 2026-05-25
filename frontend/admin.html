@@ -20,7 +20,6 @@
     <!-- Links de gerenciamento -->
     <section>
       <h2>Gerenciar Recursos</h2>
-      <p>Selecione abaixo qual entidade deseja administrar:</p>
       <div class="admin-links">
         <a href="doacoes.html" class="btn">Doações</a>
         <a href="instituicoes.html" class="btn">Instituições</a>
@@ -30,98 +29,117 @@
       </div>
     </section>
 
+    <!-- Cadastro de novos usuários -->
+    <section>
+      <h2>Cadastrar Novo Usuário</h2>
+      <form id="formCadastroAdmin">
+        <input type="text" name="nome" placeholder="Nome" required>
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="password" name="senha" placeholder="Senha" required>
+        <select name="role" required>
+          <option value="">Selecione o tipo</option>
+          <option value="doador">Doador</option>
+          <option value="ong">ONG</option>
+          <option value="instituicao_parceira">Instituição Parceira</option>
+          <option value="instituicao_receptora">Instituição Receptora</option>
+          <option value="admin">Administrador</option>
+        </select>
+        <button type="submit">Cadastrar Usuário</button>
+      </form>
+    </section>
+
     <!-- Resumo geral -->
     <section>
       <h2>Resumo Geral</h2>
-      <p>Visualize estatísticas consolidadas das operações:</p>
       <canvas id="graficoResumo"></canvas>
     </section>
 
     <!-- Tipos de alimentos doados -->
     <section>
       <h2>Distribuição de Alimentos Doado</h2>
-      <p>Veja a proporção de cada tipo de alimento doado:</p>
       <canvas id="graficoAlimentos"></canvas>
     </section>
   </main>
 
   <script>
-    const API_URL = "https://seu-backend.onrender.com"; // ajuste para o endereço real
+    const API_URL = "https://plataformasolidaria.onrender.com";
 
     function logout() {
+      localStorage.removeItem("usuarioLogado");
       alert("Você saiu do sistema ✅");
       window.location.href = "login.html";
     }
 
+    // Cadastro de usuários pelo Admin
+    document.getElementById("formCadastroAdmin")?.addEventListener("submit", async e => {
+      e.preventDefault();
+      const nome = e.target.nome.value;
+      const email = e.target.email.value;
+      const senha = e.target.senha.value;
+      const role = e.target.role.value;
+
+      try {
+        const res = await fetch(`${API_URL}/auth/register`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nome, email, senha, role })
+        });
+
+        if (res.ok) {
+          alert("Usuário cadastrado com sucesso ✅");
+          e.target.reset();
+        } else {
+          alert("Erro ao cadastrar usuário ❌");
+        }
+      } catch (err) {
+        console.error("Erro no cadastro de usuário pelo admin:", err);
+      }
+    });
+
     // Exibir gráficos no painel admin
     async function carregarResumoAdmin() {
-      console.log("🔍 carregando resumo admin...");
       try {
-        // Buscar dados de doações
         const resDoacoes = await fetch(`${API_URL}/doacoes`);
         const doacoes = await resDoacoes.json();
 
-        // Buscar dados de entregas
         const resEntregas = await fetch(`${API_URL}/entregas`);
         const entregas = await resEntregas.json();
 
-        // Buscar dados de famílias
         const resFamilias = await fetch(`${API_URL}/familias`);
         const familias = await resFamilias.json();
 
-        // Buscar dados de instituições
         const resInstituicoes = await fetch(`${API_URL}/instituicoes`);
         const instituicoes = await resInstituicoes.json();
 
-        // Consolidar estatísticas de alimentos
         const dadosDoacoes = {};
         doacoes.forEach(d => {
           dadosDoacoes[d.alimento] = (dadosDoacoes[d.alimento] || 0) + d.quantidade;
         });
 
-        // Gráfico 1: Quantidade de registros
-        const ctxResumo = document.getElementById("graficoResumo").getContext("2d");
-        new Chart(ctxResumo, {
+        // Gráfico 1: Resumo
+        new Chart(document.getElementById("graficoResumo").getContext("2d"), {
           type: "bar",
           data: {
             labels: ["Doações", "Entregas", "Famílias", "Instituições"],
-            datasets: [
-              {
-                label: "Quantidade de Registros",
-                data: [doacoes.length, entregas.length, familias.length, instituicoes.length],
-                backgroundColor: ["#9C27B0", "#FF9800", "#4CAF50", "#2196F3"]
-              }
-            ]
-          },
-          options: {
-            responsive: true,
-            plugins: {
-              legend: { display: false },
-              title: { display: true, text: "Resumo Geral de Registros" }
-            }
+            datasets: [{
+              label: "Quantidade de Registros",
+              data: [doacoes.length, entregas.length, familias.length, instituicoes.length],
+              backgroundColor: ["#9C27B0", "#FF9800", "#4CAF50", "#2196F3"]
+            }]
           }
         });
 
-        // Gráfico 2: Distribuição de alimentos
-        const ctxAlimentos = document.getElementById("graficoAlimentos").getContext("2d");
-        new Chart(ctxAlimentos, {
+        // Gráfico 2: Alimentos
+        new Chart(document.getElementById("graficoAlimentos").getContext("2d"), {
           type: "pie",
           data: {
             labels: Object.keys(dadosDoacoes),
             datasets: [{
-              label: "Alimentos Doado",
               data: Object.values(dadosDoacoes),
               backgroundColor: ["#9C27B0", "#673AB7", "#FF9800", "#607D8B", "#4CAF50", "#2196F3", "#E91E63"]
             }]
-          },
-          options: {
-            responsive: true,
-            plugins: {
-              title: { display: true, text: "Distribuição de Alimentos Doado" }
-            }
           }
         });
-
       } catch (err) {
         console.error("Erro ao carregar resumo admin", err);
         alert("Erro ao carregar dados do painel ❌");

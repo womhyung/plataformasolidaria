@@ -24,10 +24,13 @@
     </section>
   </main>
 
+  <script src="script.js"></script>
   <script>
-    const API_URL = "https://plataformasolidaria.onrender.com"; // ajuste para o endereço real
+    const API_URL = "https://plataformasolidaria.onrender.com";
+    const usuarioLogado = JSON.parse(localStorage.getItem("usuarioLogado"));
 
     function logout() {
+      localStorage.removeItem("usuarioLogado");
       alert("Você saiu do sistema ✅");
       window.location.href = "login.html";
     }
@@ -40,12 +43,20 @@
         const lista = document.getElementById("listaEntregas");
         lista.innerHTML = "";
 
-        entregas.forEach(e => {
+        // Filtrar entregas do beneficiário logado
+        const minhasEntregas = entregas.filter(e => e.familiaDestino === usuarioLogado?.nome);
+
+        if (minhasEntregas.length === 0) {
+          lista.innerHTML = "<li>Nenhuma entrega encontrada.</li>";
+          return;
+        }
+
+        minhasEntregas.forEach(e => {
           const li = document.createElement("li");
           li.innerHTML = `
             <strong>${e.alimento}</strong> - Quantidade: ${e.quantidade} 
             | Status: ${e.status || "Pendente"}
-            <button onclick="confirmarRecebimento('${e._id}')">Confirmar Recebimento</button>
+            ${e.status !== "Recebido" ? `<button onclick="confirmarRecebimento('${e._id}')">Confirmar Recebimento</button>` : ""}
           `;
           lista.appendChild(li);
         });

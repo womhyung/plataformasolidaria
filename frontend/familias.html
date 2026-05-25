@@ -19,10 +19,10 @@
     <!-- Formulário de cadastro -->
     <section>
       <h2>Cadastrar Família</h2>
-      <form id="formFamilia" onsubmit="cadastrarFamilia(event)">
-        <input type="text" id="nomeFamilia" placeholder="Nome da Família" required>
-        <input type="text" id="endereco" placeholder="Endereço" required>
-        <input type="number" id="membros" placeholder="Número de Membros" required>
+      <form id="formFamilia">
+        <input type="text" name="nomeFamilia" placeholder="Nome da Família" required>
+        <input type="text" name="endereco" placeholder="Endereço" required>
+        <input type="number" name="membros" placeholder="Número de Membros" required>
         <button type="submit">Cadastrar</button>
       </form>
     </section>
@@ -40,149 +40,41 @@
     </section>
   </main>
 
+  <script src="script.js"></script>
   <script>
-    const API_URL = "https://plataformasolidaria.onrender.com"; // seu backend no Render
+    const API_URL = "https://plataformasolidaria.onrender.com";
 
     function logout() {
+      localStorage.removeItem("usuarioLogado");
       alert("Você saiu do sistema ✅");
       window.location.href = "login.html";
-    }
-
-    async function cadastrarFamilia(event) {
-      event.preventDefault();
-      const nomeFamilia = document.getElementById("nomeFamilia").value;
-      const endereco = document.getElementById("endereco").value;
-      const membros = document.getElementById("membros").value;
-
-      try {
-        const res = await fetch(`${API_URL}/familias`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ nomeFamilia, endereco, membros })
-        });
-
-        if (res.status === 201 || res.status === 200) {
-          alert("Família cadastrada com sucesso ✅");
-          document.getElementById("formFamilia").reset();
-          carregarFamilias();
-        } else {
-          const erro = await res.json();
-          alert(erro.message || "Erro ao cadastrar família ❌");
-        }
-      } catch (err) {
-        console.error("Erro ao cadastrar família", err);
-        alert("Erro ao cadastrar família ❌");
-      }
-    }
-
-    async function carregarFamilias() {
-      try {
-        const res = await fetch(`${API_URL}/familias`);
-        const familias = await res.json();
-
-        const lista = document.getElementById("listaFamilias");
-        lista.innerHTML = "";
-
-        familias.forEach(f => {
-          const li = document.createElement("li");
-          li.textContent = `${f.nomeFamilia} | ${f.endereco} | ${f.membros} membros`;
-
-          const btnEditar = document.createElement("button");
-          btnEditar.textContent = "Editar";
-          btnEditar.onclick = () => editarFamilia(f._id);
-
-          const btnExcluir = document.createElement("button");
-          btnExcluir.textContent = "Excluir";
-          btnExcluir.onclick = () => excluirFamilia(f._id, li);
-
-          li.appendChild(btnEditar);
-          li.appendChild(btnExcluir);
-          lista.appendChild(li);
-        });
-      } catch (err) {
-        console.error("Erro ao carregar famílias", err);
-        alert("Erro ao carregar famílias ❌");
-      }
-    }
-
-    async function editarFamilia(id) {
-      const novoNome = prompt("Digite o novo nome da família:");
-      const novoEndereco = prompt("Digite o novo endereço:");
-      const novosMembros = prompt("Digite o novo número de membros:");
-
-      if (!novoNome || !novoEndereco || !novosMembros) return;
-
-      try {
-        const res = await fetch(`${API_URL}/familias/${id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ nomeFamilia: novoNome, endereco: novoEndereco, membros: novosMembros })
-        });
-
-        if (res.status === 200) {
-          alert("Família atualizada com sucesso ✅");
-          carregarFamilias();
-        } else {
-          alert("Erro ao atualizar família ❌");
-        }
-      } catch (err) {
-        console.error("Erro ao editar família", err);
-        alert("Erro ao editar família ❌");
-      }
-    }
-
-    async function excluirFamilia(id, li) {
-      if (!confirm("Tem certeza que deseja excluir esta família?")) return;
-
-      try {
-        const res = await fetch(`${API_URL}/familias/${id}`, {
-          method: "DELETE"
-        });
-
-        if (res.status === 200) {
-          alert("Família excluída com sucesso ✅");
-          li.remove();
-        } else {
-          alert("Erro ao excluir família ❌");
-        }
-      } catch (err) {
-        console.error("Erro ao excluir família", err);
-        alert("Erro ao excluir família ❌");
-      }
     }
 
     // Pesquisa simples
     document.getElementById("pesquisaFamilias")?.addEventListener("input", async e => {
       const termo = e.target.value.toLowerCase();
-      const res = await fetch(`${API_URL}/familias`);
-      const familias = await res.json();
+      try {
+        const res = await fetch(`${API_URL}/familias`);
+        const familias = await res.json();
 
-      const list = document.getElementById("listaFamilias");
-      list.innerHTML = "";
+        const list = document.getElementById("listaFamilias");
+        list.innerHTML = "";
 
-      familias.filter(f =>
-        f.nomeFamilia.toLowerCase().includes(termo) ||
-        f.endereco.toLowerCase().includes(termo)
-      ).forEach(f => {
-        const li = document.createElement("li");
-        li.textContent = `${f.nomeFamilia} | ${f.endereco} | ${f.membros} membros`;
-
-        const btnEditar = document.createElement("button");
-        btnEditar.textContent = "Editar";
-        btnEditar.onclick = () => editarFamilia(f._id);
-
-        const btnExcluir = document.createElement("button");
-        btnExcluir.textContent = "Excluir";
-        btnExcluir.onclick = () => excluirFamilia(f._id, li);
-
-        li.appendChild(btnEditar);
-        li.appendChild(btnExcluir);
-        list.appendChild(li);
-      });
+        familias.filter(f =>
+          f.nomeFamilia.toLowerCase().includes(termo) ||
+          f.endereco.toLowerCase().includes(termo)
+        ).forEach(f => {
+          const li = document.createElement("li");
+          li.textContent = `${f.nomeFamilia} | ${f.endereco} | ${f.membros} membros`;
+          list.appendChild(li);
+        });
+      } catch (err) {
+        console.error("Erro na pesquisa de famílias", err);
+      }
     });
 
     // Carregar lista ao abrir a página
-    carregarFamilias();
+    carregarLista("listaFamilias", "familias");
   </script>
 </body>
 </html>

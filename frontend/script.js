@@ -645,3 +645,28 @@ async function excluirRegistro(collection, id, li) {
   }
 }
 
+// Cadastro de usuários pelo Admin
+document.getElementById("formCadastroAdmin")?.addEventListener("submit", async e => {
+  e.preventDefault();
+  const nome = e.target.nome.value;
+  const email = e.target.email.value;
+  const senha = e.target.senha.value;
+  const role = e.target.role.value;
+
+  try {
+    const res = await fetch(`${API_URL}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nome, email, senha, role })
+    });
+
+    if (res.ok) {
+      alert("Usuário cadastrado com sucesso ✅");
+      e.target.reset();
+    } else {
+      alert("Erro ao cadastrar usuário ❌");
+    }
+  } catch (err) {
+    console.error("Erro no cadastro de usuário pelo admin:", err);
+  }
+});
