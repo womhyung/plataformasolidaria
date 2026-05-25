@@ -44,6 +44,7 @@ async function criarAdmin() {
 }
 
 app.use("/auth", require("./routes/auth"));
+
 // Rota raiz opcional (teste rápido)
 app.get("/", (req, res) => {
   res.send("API Plataforma Solidária está rodando 🚀");
