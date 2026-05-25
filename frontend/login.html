@@ -7,20 +7,19 @@
 </head>
 <body>
   <h1>Login</h1>
-  <form onsubmit="login(event)">
-    <input type="email" id="email" placeholder="Email" required>
-    <input type="password" id="senha" placeholder="Senha" required>
+  <form id="formLogin">
+    <input type="email" name="email" placeholder="Email" required>
+    <input type="password" name="senha" placeholder="Senha" required>
     <button type="submit">Entrar</button>
   </form>
 
   <script>
-    // Defina a URL da sua API (Render ou localhost)
-    const API_URL = "https://plataformasolidaria.onrender.com"; // ajuste para o endereço real
+    const API_URL = "https://plataformasolidaria.onrender.com"; // backend no Render
 
-    async function login(event) {
-      event.preventDefault();
-      const email = document.getElementById("email").value;
-      const senha = document.getElementById("senha").value;
+    document.getElementById("formLogin").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = e.target.email.value;
+      const senha = e.target.senha.value;
 
       try {
         const res = await fetch(`${API_URL}/auth/login`, {
@@ -48,7 +47,7 @@
         console.error("❌ Erro na requisição:", err);
         alert("Erro de conexão com o servidor");
       }
-    }
+    });
   </script>
 </body>
 </html>

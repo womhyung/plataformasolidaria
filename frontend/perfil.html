@@ -30,7 +30,7 @@
     </section>
 
     <!-- Perfil da ONG -->
-    <section id="perfilOng">
+    <section id="perfilOng" style="display:none;">
       <h2>Painel da ONG</h2>
       <h3>Doações Recebidas</h3>
       <ul id="listaDoacoesOng"></ul>
@@ -42,14 +42,14 @@
     </section>
 
     <!-- Perfil da Instituição Parceira -->
-    <section id="perfilInstituicaoParceira">
+    <section id="perfilInstituicaoParceira" style="display:none;">
       <h2>Doações Realizadas</h2>
       <canvas id="graficoInstituicaoParceira"></canvas>
       <ul id="listaDoacoesInstituicaoParceira"></ul>
     </section>
 
     <!-- Perfil da Instituição Receptora -->
-    <section id="perfilInstituicaoReceptora">
+    <section id="perfilInstituicaoReceptora" style="display:none;">
       <h2>Feed da Instituição</h2>
       <div id="feedImagens"></div>
       <h3>Doações Recebidas</h3>
@@ -57,7 +57,7 @@
     </section>
 
     <!-- Perfil do Administrador -->
-    <section id="perfilAdmin">
+    <section id="perfilAdmin" style="display:none;">
       <h2>Painel Administrativo</h2>
       <div class="admin-links">
         <a href="doacoes.html">Gerenciar Doações</a>
@@ -69,6 +69,30 @@
     </section>
   </main>
 
-  <script src="script.js"></script>
+  <script>
+    // Verifica se há usuário logado
+    const usuarioLogado = JSON.parse(localStorage.getItem("usuarioLogado"));
+    if (!usuarioLogado) {
+      alert("Você precisa estar logado para acessar o perfil ❌");
+      window.location.href = "login.html";
+    } else {
+      // Mostra apenas a seção correspondente ao role
+      showSection(`perfil${capitalize(usuarioLogado.role)}`);
+    }
+
+    function showSection(sectionId) {
+      document.querySelectorAll("main section").forEach(sec => sec.style.display = "none");
+      document.getElementById(sectionId).style.display = "block";
+    }
+
+    function logout() {
+      localStorage.removeItem("usuarioLogado");
+      window.location.href = "login.html";
+    }
+
+    function capitalize(str) {
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+  </script>
 </body>
 </html>
