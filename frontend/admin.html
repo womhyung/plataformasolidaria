@@ -11,8 +11,8 @@
   <header>
     <h1>Painel Administrativo</h1>
     <nav>
-      <a href="perfil.html">Voltar ao Perfil</a>
-      <button onclick="logout()">Sair</button>
+      <a href="perfil.html" class="btn">Voltar ao Perfil</a>
+      <button onclick="logout()" class="btn">Sair</button>
     </nav>
   </header>
 
@@ -42,6 +42,7 @@
           <option value="ong">ONG</option>
           <option value="instituicao_parceira">Instituição Parceira</option>
           <option value="instituicao_receptora">Instituição Receptora</option>
+          <option value="beneficiario">Beneficiário</option>
           <option value="admin">Administrador</option>
         </select>
         <button type="submit">Cadastrar Usuário</button>
@@ -52,12 +53,14 @@
     <section>
       <h2>Resumo Geral</h2>
       <canvas id="graficoResumo"></canvas>
+      <p id="fallbackResumo" style="color:gray;"></p>
     </section>
 
     <!-- Tipos de alimentos doados -->
     <section>
       <h2>Distribuição de Alimentos Doado</h2>
       <canvas id="graficoAlimentos"></canvas>
+      <p id="fallbackAlimentos" style="color:gray;"></p>
     </section>
   </main>
 
@@ -89,7 +92,8 @@
           alert("Usuário cadastrado com sucesso ✅");
           e.target.reset();
         } else {
-          alert("Erro ao cadastrar usuário ❌");
+          const erro = await res.json();
+          alert(erro.message || "Erro ao cadastrar usuário ❌");
         }
       } catch (err) {
         console.error("Erro no cadastro de usuário pelo admin:", err);
@@ -115,6 +119,15 @@
         doacoes.forEach(d => {
           dadosDoacoes[d.alimento] = (dadosDoacoes[d.alimento] || 0) + d.quantidade;
         });
+
+        // Fallbacks
+        if (doacoes.length === 0 && entregas.length === 0 && familias.length === 0 && instituicoes.length === 0) {
+          document.getElementById("fallbackResumo").textContent = "Nenhum dado disponível ainda.";
+        }
+
+        if (Object.keys(dadosDoacoes).length === 0) {
+          document.getElementById("fallbackAlimentos").textContent = "Nenhum alimento registrado ainda.";
+        }
 
         // Gráfico 1: Resumo
         new Chart(document.getElementById("graficoResumo").getContext("2d"), {

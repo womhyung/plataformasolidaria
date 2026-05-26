@@ -52,17 +52,12 @@ nav button:hover {
 
 /* Seções */
 section {
-  display: none;
   padding: 1.5rem;
   margin: 1.5rem auto;
-  max-width: 800px;
+  max-width: 900px;
   background: rgba(255,255,255,0.1);
   border-radius: 10px;
   box-shadow: 0 3px 8px rgba(0,0,0,0.4);
-}
-
-section.active {
-  display: block;
 }
 
 h2 {
@@ -70,6 +65,47 @@ h2 {
   padding-bottom: 0.5rem;
   margin-bottom: 1rem;
   color: #FFD54F;
+}
+
+/* Banner inicial (landing page) */
+#inicio {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 70vh;
+  text-align: center;
+  background: linear-gradient(135deg, #3f51b5, #6a0dad);
+  border-radius: 10px;
+  color: #fff;
+}
+
+#inicio h2 {
+  font-size: 2.2rem;
+  margin-bottom: 1rem;
+  color: #FFD54F;
+}
+
+#inicio p {
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+
+#inicio button {
+  margin: 0.5rem;
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  background: #FF9800;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+}
+
+#inicio button:hover {
+  background: #e68900;
+  transform: scale(1.05);
 }
 
 /* Formulários */
@@ -148,6 +184,15 @@ canvas {
   display: block;
 }
 
+/* Mensagens de fallback */
+#fallbackResumo,
+#fallbackAlimentos {
+  text-align: center;
+  font-style: italic;
+  margin-top: 0.5rem;
+  color: #ddd;
+}
+
 /* Painel Admin */
 .admin-links {
   display: flex;
@@ -192,17 +237,4 @@ canvas {
     flex-direction: column;
     align-items: flex-start;
   }
-}
-/* Esconde todas as seções por padrão */
-main section {
-  display: none;
-}
-
-/* Mostra apenas a seção ativa */
-main section.active {
-  display: block;
-}
-#graficoAdmin {
-  max-width: 900px;
-  margin: 0 auto;
 }
