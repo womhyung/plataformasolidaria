@@ -19,9 +19,9 @@
     <!-- Cadastro de doações -->
     <section>
       <h2>Registrar Nova Doação</h2>
-      <form onsubmit="cadastrarDoacao(event)">
-        <input type="text" id="alimento" placeholder="Tipo de alimento" required>
-        <input type="number" id="quantidade" placeholder="Quantidade" required>
+      <form id="formDoacao">
+        <input type="text" name="alimento" placeholder="Tipo de alimento" required>
+        <input type="number" name="quantidade" placeholder="Quantidade" required>
         <button type="submit">Cadastrar</button>
       </form>
     </section>
@@ -33,42 +33,43 @@
     </section>
   </main>
 
+  <script src="script.js"></script>
   <script>
-    const API_URL = "https://seu-backend.onrender.com"; // ajuste para o endereço real
+    const API_URL = "https://plataformasolidaria.onrender.com";
+    const usuarioLogado = JSON.parse(localStorage.getItem("usuarioLogado"));
 
     function logout() {
+      localStorage.removeItem("usuarioLogado");
       alert("Você saiu do sistema ✅");
       window.location.href = "login.html";
     }
 
-    async function cadastrarDoacao(event) {
-      event.preventDefault();
-      const alimento = document.getElementById("alimento").value;
-      const quantidade = document.getElementById("quantidade").value;
+    // Cadastro de doações
+    document.getElementById("formDoacao")?.addEventListener("submit", async e => {
+      e.preventDefault();
+      const alimento = e.target.alimento.value;
+      const quantidade = e.target.quantidade.value;
 
       try {
         const res = await fetch(`${API_URL}/doacoes`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ alimento, quantidade })
+          body: JSON.stringify({ alimento, quantidade, ong: usuarioLogado?.nome })
         });
 
-        if (res.status !== 201 && res.status !== 200) {
-          const erro = await res.json();
-          alert(erro.message || "Erro ao cadastrar doação ❌");
-          return;
+        if (res.ok) {
+          alert("Doação registrada com sucesso ✅");
+          e.target.reset();
+          carregarDoacoes();
+        } else {
+          alert("Erro ao cadastrar doação ❌");
         }
-
-        alert("Doação registrada com sucesso ✅");
-        document.getElementById("alimento").value = "";
-        document.getElementById("quantidade").value = "";
-        carregarDoacoes();
       } catch (err) {
         console.error("Erro ao cadastrar doação", err);
-        alert("Erro ao cadastrar doação ❌");
       }
-    }
+    });
 
+    // Carregar doações da ONG logada
     async function carregarDoacoes() {
       try {
         const res = await fetch(`${API_URL}/doacoes`);
@@ -76,18 +77,77 @@
 
         const lista = document.getElementById("listaDoacoes");
         lista.innerHTML = "";
-        doacoes.forEach(d => {
+
+        const minhasDoacoes = doacoes.filter(d => d.ong === usuarioLogado?.nome);
+
+        if (minhasDoacoes.length === 0) {
+          lista.innerHTML = "<li>Nenhuma doação registrada.</li>";
+          return;
+        }
+
+        minhasDoacoes.forEach(d => {
           const li = document.createElement("li");
           li.textContent = `${d.alimento} - ${d.quantidade}`;
+
+          const btnEditar = document.createElement("button");
+          btnEditar.textContent = "Editar";
+          btnEditar.onclick = () => editarDoacao(d._id);
+
+          const btnExcluir = document.createElement("button");
+          btnExcluir.textContent = "Excluir";
+          btnExcluir.onclick = () => excluirDoacao(d._id, li);
+
+          li.appendChild(btnEditar);
+          li.appendChild(btnExcluir);
           lista.appendChild(li);
         });
       } catch (err) {
         console.error("Erro ao carregar doações", err);
-        alert("Erro ao carregar doações ❌");
       }
     }
 
-    // Carregar doações ao abrir a página
+    async function editarDoacao(id) {
+      const novoAlimento = prompt("Digite o novo alimento:");
+      const novaQuantidade = prompt("Digite a nova quantidade:");
+
+      if (!novoAlimento || !novaQuantidade) return;
+
+      try {
+        const res = await fetch(`${API_URL}/doacoes/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ alimento: novoAlimento, quantidade: novaQuantidade })
+        });
+
+        if (res.ok) {
+          alert("Doação atualizada com sucesso ✅");
+          carregarDoacoes();
+        } else {
+          alert("Erro ao atualizar doação ❌");
+        }
+      } catch (err) {
+        console.error("Erro ao editar doação", err);
+      }
+    }
+
+    async function excluirDoacao(id, li) {
+      if (!confirm("Tem certeza que deseja excluir esta doação?")) return;
+
+      try {
+        const res = await fetch(`${API_URL}/doacoes/${id}`, { method: "DELETE" });
+
+        if (res.ok) {
+          alert("Doação excluída com sucesso ✅");
+          li.remove();
+        } else {
+          alert("Erro ao excluir doação ❌");
+        }
+      } catch (err) {
+        console.error("Erro ao excluir doação", err);
+      }
+    }
+
+    // Carregar lista ao abrir a página
     carregarDoacoes();
   </script>
 </body>
