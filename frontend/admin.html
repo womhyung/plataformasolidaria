@@ -66,7 +66,8 @@
 
   <script>
     const API_URL = "https://plataformasolidaria.onrender.com";
-
+    const usuarioLogado = JSON.parse(localStorage.getItem("usuarioLogado"));
+    
     function logout() {
       localStorage.removeItem("usuarioLogado");
       alert("Você saiu do sistema ✅");
