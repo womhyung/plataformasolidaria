@@ -53,6 +53,8 @@ app.use("/instituicoes", require("./routes/instituicoes"));
 app.use("/familias", require("./routes/familias"));
 app.use("/entregas", require("./routes/entregas"));
 app.use("/avaliacoes", require("./routes/avaliacoes"));
+app.use("/usuarios", require("./routes/usuarios"));
+
 
 // Rota raiz opcional (teste rápido)
 app.get("/", (req, res) => {

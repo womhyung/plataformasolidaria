@@ -51,8 +51,10 @@
           window.location.href = "ong.html";
         } else if (usuarioLogado.role === "beneficiario") {
           window.location.href = "beneficiario.html";
+        } else if (usuarioLogado.role === "doador") {
+          window.location.href = "doador.html";
         } else {
-          window.location.href = "perfil.html";
+          window.location.href = "perfil.html"; // fallback
         }
       } catch (err) {
         console.error("❌ Erro na requisição:", err);

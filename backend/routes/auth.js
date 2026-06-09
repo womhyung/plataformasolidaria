@@ -1,10 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken"); // se quiser gerar token
+const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const autenticarToken = require("../middleware/auth");
 
-// Rota de login
+// LOGIN - qualquer usuário pode acessar
 router.post("/login", async (req, res) => {
   try {
     const { email, senha } = req.body;
@@ -15,37 +15,46 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ message: "Credenciais inválidas ❌" });
     }
 
-    // Compara senha informada com a criptografada
-    const senhaValida = await bcrypt.compare(senha, user.senha);
+    // Usa método compararSenha do modelo
+    const senhaValida = await user.compararSenha(senha);
     if (!senhaValida) {
       return res.status(401).json({ message: "Credenciais inválidas ❌" });
     }
 
-    // Gera token JWT (opcional, mas recomendado)
+    // Gera token JWT
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET || "segredo",
       { expiresIn: "1h" }
     );
 
-    // Retorna sucesso e dados do usuário
-    res.json({ 
-      message: "Login bem-sucedido ✅", 
-      role: user.role,
-      email: user.email,
+    // Retorna dados completos do usuário
+    res.json({
+      message: "Login bem-sucedido ✅",
+      user: {
+        id: user._id,
+        nome: user.nome,
+        email: user.email,
+        role: user.role,
+        bio: user.bio,
+        foto: user.foto
+      },
       token
     });
-
   } catch (err) {
     console.error("❌ Erro no login:", err);
     res.status(500).json({ message: "Erro interno no servidor" });
   }
 });
 
-// Rota de cadastro
-router.post("/register", async (req, res) => {
+// REGISTER - apenas admin pode criar novos usuários
+router.post("/register", autenticarToken, async (req, res) => {
   try {
-    const { nome, email, senha, role } = req.body;
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ message: "Somente administradores podem criar usuários" });
+    }
+
+    const { nome, email, senha, role, bio, foto } = req.body;
 
     // Verifica se já existe usuário com esse email
     const usuarioExistente = await User.findOne({ email });
@@ -53,14 +62,21 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({ message: "Email já cadastrado ❌" });
     }
 
-    // Criptografa a senha
-    const senhaHash = await bcrypt.hash(senha, 10);
-
-    // Cria novo usuário
-    const novoUsuario = new User({ nome, email, senha: senhaHash, role });
+    // Cria novo usuário (hash da senha é feito no pre-save do modelo User)
+    const novoUsuario = new User({ nome, email, senha, role, bio, foto });
     await novoUsuario.save();
 
-    res.status(201).json({ message: "Usuário cadastrado com sucesso ✅" });
+    res.status(201).json({ 
+      message: "Usuário cadastrado com sucesso ✅", 
+      usuario: {
+        id: novoUsuario._id,
+        nome: novoUsuario.nome,
+        email: novoUsuario.email,
+        role: novoUsuario.role,
+        bio: novoUsuario.bio,
+        foto: novoUsuario.foto
+      }
+    });
   } catch (err) {
     console.error("❌ Erro no cadastro:", err);
     res.status(500).json({ message: "Erro interno no servidor" });

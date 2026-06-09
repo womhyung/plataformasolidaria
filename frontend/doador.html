@@ -16,7 +16,7 @@
         <span id="contadorDoacoes">0 doações</span>
         <div class="acoes">
           <button onclick="abrirFormularioDoacao()">Nova Doação</button>
-          <button onclick="editarPerfil()">Editar Perfil</button>
+          <button onclick="abrirFormularioEditarPerfil()">Editar Perfil</button>
           <button onclick="logout()">Sair</button>
         </div>
       </div>
@@ -26,6 +26,45 @@
     <div class="feed" id="feedDoacoes">
       <!-- Cards de doações serão carregados via JS -->
     </div>
+  </div>
+
+  <!-- Modal Nova Doação -->
+  <div id="formNovaDoacao" class="modal" style="display:none;">
+    <h3>Nova Doação</h3>
+    <form id="novaDoacaoForm">
+      <label>Alimento:</label>
+      <input type="text" name="alimento" required>
+
+      <label>Quantidade:</label>
+      <input type="number" name="quantidade" required>
+
+      <label>Validade:</label>
+      <input type="text" name="validade" required>
+
+      <label>Localização:</label>
+      <input type="text" name="localizacao" required>
+
+      <button type="submit">Cadastrar</button>
+      <button type="button" onclick="fecharFormularioDoacao()">Cancelar</button>
+    </form>
+  </div>
+
+  <!-- Modal Editar Perfil -->
+  <div id="formEditarPerfil" class="modal" style="display:none;">
+    <h3>Editar Perfil</h3>
+    <form id="editarPerfilForm">
+      <label>Nome:</label>
+      <input type="text" name="nome" id="editarNome" required>
+
+      <label>Bio:</label>
+      <input type="text" name="bio" id="editarBio">
+
+      <label>Foto de Perfil (URL):</label>
+      <input type="text" name="foto" id="editarFoto">
+
+      <button type="submit">Salvar</button>
+      <button type="button" onclick="fecharFormularioEditarPerfil()">Cancelar</button>
+    </form>
   </div>
 
   <script src="doador.js"></script>
