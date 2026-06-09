@@ -7,10 +7,12 @@ require("dotenv").config(); // para usar variáveis de ambiente
 
 const app = express();
 
+// Middleware
+const autenticarToken = require("./middleware/auth");
+
 // Configuração de CORS — libera acesso para qualquer origem
 app.use(cors());
 app.use(express.json());
-
 
 // Conexão com MongoDB
 mongoose.connect(process.env.MONGO_URI, {
@@ -30,6 +32,7 @@ async function criarAdmin() {
     if (!existe) {
       const senhaCriptografada = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
       await User.create({
+        nome: process.env.ADMIN_NAME || "Administrador", // nome obrigatório
         email: process.env.ADMIN_EMAIL,
         senha: senhaCriptografada,
         role: "admin"
@@ -43,7 +46,13 @@ async function criarAdmin() {
   }
 }
 
+// Rotas
 app.use("/auth", require("./routes/auth"));
+app.use("/doacoes", require("./routes/doacoes"));
+app.use("/instituicoes", require("./routes/instituicoes"));
+app.use("/familias", require("./routes/familias"));
+app.use("/entregas", require("./routes/entregas"));
+app.use("/avaliacoes", require("./routes/avaliacoes"));
 
 // Rota raiz opcional (teste rápido)
 app.get("/", (req, res) => {
@@ -58,13 +67,6 @@ app.get("/ping", (req, res) => {
     res.status(500).json({ status: "error", message: "Banco não conectado ❌" });
   }
 });
-
-// Rotas CRUD
-app.use("/doacoes", require("./routes/doacoes"));
-app.use("/instituicoes", require("./routes/instituicoes"));
-app.use("/familias", require("./routes/familias"));
-app.use("/entregas", require("./routes/entregas"));
-app.use("/avaliacoes", require("./routes/avaliacoes"));
 
 // Porta dinâmica para Render
 const PORT = process.env.PORT || 5000;
