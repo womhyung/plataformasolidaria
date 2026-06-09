@@ -1,19 +1,25 @@
 const express = require("express");
 const router = express.Router();
 const Doacao = require("../models/Doacao");
+const autenticarToken = require("../middleware/auth");
 
-// CREATE - inserir nova doação
-router.post("/", async (req, res) => {
+// CREATE - inserir nova doação (vinculada ao usuário logado)
+router.post("/", autenticarToken, async (req, res) => {
   try {
-    const novaDoacao = new Doacao(req.body);
-    await novaDoacao.save();
+    const novaDoacao = await Doacao.create({
+      nomeDoador: req.user.nome, // pega o nome do usuário do token
+      alimento: req.body.alimento,
+      quantidade: req.body.quantidade,
+      validade: req.body.validade,
+      localizacao: req.body.localizacao
+    });
     res.status(201).json(novaDoacao);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
 
-// READ - listar todas as doações
+// READ - listar todas as doações (visão geral)
 router.get("/", async (req, res) => {
   try {
     const doacoes = await Doacao.find();
@@ -23,8 +29,18 @@ router.get("/", async (req, res) => {
   }
 });
 
+// READ - listar apenas as doações do usuário logado
+router.get("/minhas", autenticarToken, async (req, res) => {
+  try {
+    const doacoes = await Doacao.find({ nomeDoador: req.user.nome });
+    res.json(doacoes);
+  } catch (err) {
+    res.status(500).json({ message: "Erro ao buscar doações ❌" });
+  }
+});
+
 // UPDATE - atualizar doação por ID
-router.put("/:id", async (req, res) => {
+router.put("/:id", autenticarToken, async (req, res) => {
   try {
     const atualizada = await Doacao.findByIdAndUpdate(
       req.params.id,
@@ -41,7 +57,7 @@ router.put("/:id", async (req, res) => {
 });
 
 // DELETE - excluir doação por ID
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", autenticarToken, async (req, res) => {
   try {
     const deletada = await Doacao.findByIdAndDelete(req.params.id);
     if (!deletada) {

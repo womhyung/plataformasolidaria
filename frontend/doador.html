@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Perfil do Doador</title>
+  <link rel="stylesheet" href="doador.css">
+</head>
+<body>
+  <div class="perfil">
+    <!-- Header estilo Instagram -->
+    <div class="header">
+      <img src="default-avatar.png" class="foto-perfil" alt="Foto de perfil">
+      <div class="info">
+        <h2 id="nomeDoador">Williams</h2>
+        <p id="bio">Doador ativo desde 2025</p>
+        <span id="contadorDoacoes">0 doações</span>
+        <div class="acoes">
+          <button onclick="abrirFormularioDoacao()">Nova Doação</button>
+          <button onclick="editarPerfil()">Editar Perfil</button>
+          <button onclick="logout()">Sair</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feed de doações -->
+    <div class="feed" id="feedDoacoes">
+      <!-- Cards de doações serão carregados via JS -->
+    </div>
+  </div>
+
+  <script src="doador.js"></script>
+</body>
+</html>
