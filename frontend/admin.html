@@ -67,7 +67,7 @@
   <script>
     const API_URL = "https://plataformasolidaria.onrender.com";
     const usuarioLogado = JSON.parse(localStorage.getItem("usuarioLogado"));
-    
+
     function logout() {
       localStorage.removeItem("usuarioLogado");
       alert("Você saiu do sistema ✅");
@@ -77,27 +77,37 @@
     // Cadastro de usuários pelo Admin
     document.getElementById("formCadastroAdmin")?.addEventListener("submit", async e => {
       e.preventDefault();
-      const nome = e.target.nome.value;
-      const email = e.target.email.value;
-      const senha = e.target.senha.value;
+      const nome = e.target.nome.value.trim();
+      const email = e.target.email.value.trim();
+      const senha = e.target.senha.value.trim();
       const role = e.target.role.value;
+
+      if (!nome || !email || !senha || !role) {
+        alert("Preencha todos os campos corretamente ❌");
+        return;
+      }
 
       try {
         const res = await fetch(`${API_URL}/auth/register`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "Authorization": usuarioLogado?.token ? `Bearer ${usuarioLogado.token}` : ""
+          },
           body: JSON.stringify({ nome, email, senha, role })
         });
+
+        const data = await res.json();
 
         if (res.ok) {
           alert("Usuário cadastrado com sucesso ✅");
           e.target.reset();
         } else {
-          const erro = await res.json();
-          alert(erro.message || "Erro ao cadastrar usuário ❌");
+          alert(data.message || data.error || data.detail || "Erro ao cadastrar usuário ❌");
         }
       } catch (err) {
         console.error("Erro no cadastro de usuário pelo admin:", err);
+        alert("Erro de conexão com o servidor ❌");
       }
     });
 
