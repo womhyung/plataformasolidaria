@@ -24,6 +24,7 @@ mongoose.connect(process.env.MONGO_URI, {
 }).catch(err => console.error("❌ Erro ao conectar:", err));
 
 const User = require("./models/User");
+const Doacao = require("./models/Doacao"); // modelo de doações
 
 // Função para criar admin automaticamente
 async function criarAdmin() {
@@ -46,7 +47,7 @@ async function criarAdmin() {
   }
 }
 
-// Rotas
+// Rotas principais
 app.use("/auth", require("./routes/auth"));
 app.use("/doacoes", require("./routes/doacoes"));
 app.use("/instituicoes", require("./routes/instituicoes"));
@@ -55,6 +56,31 @@ app.use("/entregas", require("./routes/entregas"));
 app.use("/avaliacoes", require("./routes/avaliacoes"));
 app.use("/usuarios", require("./routes/usuarios"));
 
+// 🔹 Rota de estatísticas de doações (para gráficos do admin)
+app.get("/stats/doacoes", autenticarToken, async (req, res) => {
+  try {
+    const inicioMes = new Date();
+    inicioMes.setDate(1);
+
+    // total de doações no mês atual
+    const totalMes = await Doacao.countDocuments({ createdAt: { $gte: inicioMes } });
+
+    // agrupamento por categoria
+    const porCategoria = await Doacao.aggregate([
+      { $group: { _id: "$categoria", total: { $sum: 1 } } }
+    ]);
+
+    // agrupamento por status
+    const porStatus = await Doacao.aggregate([
+      { $group: { _id: "$status", total: { $sum: 1 } } }
+    ]);
+
+    res.json({ totalMes, porCategoria, porStatus });
+  } catch (err) {
+    console.error("❌ Erro nas estatísticas:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // Rota raiz opcional (teste rápido)
 app.get("/", (req, res) => {
