@@ -10,7 +10,14 @@
   <header>
     <h1>Gerenciar Doações</h1>
     <nav>
-      <a href="perfil.html">Voltar ao Perfil</a>
+      <a href="admin.html">Admin</a>
+      <a href="doacoes.html">Doações</a>
+      <a href="instituicoes.html">Instituições</a>
+      <a href="familias.html">Famílias</a>
+      <a href="entregas.html">Entregas</a>
+      <a href="avaliacoes.html">Avaliações</a>
+      <input type="text" id="pesquisaDoacoes" placeholder="Buscar doação...">
+      <a href="admin.html">Voltar ao Perfil</a>
       <button onclick="logout()">Sair</button>
     </nav>
   </header>
@@ -20,24 +27,31 @@
     <section>
       <h2>Registrar Doação</h2>
       <form id="formDoacao">
-        <input type="text" name="nomeDoador" placeholder="Nome do Doador" required>
         <input type="text" name="alimento" placeholder="Alimento" required>
         <input type="number" name="quantidade" placeholder="Quantidade" required>
         <input type="date" name="validade" required>
         <input type="text" name="localizacao" placeholder="Localização" required>
+
+        <!-- novos campos -->
+        <select name="categoria" required>
+          <option value="">Selecione a categoria</option>
+          <option value="Grãos">Grãos</option>
+          <option value="Hortaliças">Hortaliças</option>
+          <option value="Enlatados">Enlatados</option>
+        </select>
+
+        <select name="status">
+          <option value="pendente">Pendente</option>
+          <option value="entregue">Entregue</option>
+        </select>
+
         <button type="submit">Cadastrar</button>
       </form>
     </section>
 
-    <!-- Pesquisa -->
+    <!-- Botão para exibir lista -->
     <section>
-      <h2>Pesquisar Doações</h2>
-      <input type="text" id="pesquisaDoacoes" placeholder="Pesquisar por doador, alimento ou período">
-    </section>
-
-    <!-- Lista -->
-    <section>
-      <h2>Lista de Doações</h2>
+      <button onclick="carregarDoacoes()">Ver Doações</button>
       <ul id="listaDoacoes"></ul>
     </section>
   </main>
@@ -52,32 +66,68 @@
       window.location.href = "login.html";
     }
 
-    // Pesquisa simples
-    document.getElementById("pesquisaDoacoes")?.addEventListener("input", async e => {
-      const termo = e.target.value.toLowerCase();
-      try {
-        const res = await fetch(`${API_URL}/doacoes`);
-        const doacoes = await res.json();
-
-        const list = document.getElementById("listaDoacoes");
-        list.innerHTML = "";
-
-        doacoes.filter(d =>
-          d.nomeDoador.toLowerCase().includes(termo) ||
-          d.alimento.toLowerCase().includes(termo) ||
-          (d.dataRegistro && d.dataRegistro.includes(termo))
-        ).forEach(d => {
-          const li = document.createElement("li");
-          li.textContent = `${d.nomeDoador} | ${d.alimento} | ${d.quantidade} | ${d.localizacao}`;
-          list.appendChild(li);
-        });
-      } catch (err) {
-        console.error("Erro na pesquisa de doações", err);
+    // Pesquisa com Enter
+    document.getElementById("pesquisaDoacoes").addEventListener("keypress", e => {
+      if (e.key === "Enter") {
+        buscarDoacoes(e.target.value);
       }
     });
 
-    // Carregar lista ao abrir a página
-    carregarLista("listaDoacoes", "doacoes");
+    async function buscarDoacoes(termo) {
+      try {
+        const res = await fetch(`${API_URL}/doacoes`);
+        const doacoes = await res.json();
+        const lista = document.getElementById("listaDoacoes");
+        lista.innerHTML = "";
+
+        doacoes.filter(d =>
+          d.nomeDoador.toLowerCase().includes(termo.toLowerCase()) ||
+          d.alimento.toLowerCase().includes(termo.toLowerCase())
+        ).forEach(d => renderDoacao(d, lista));
+      } catch (err) {
+        console.error("Erro na pesquisa de doações", err);
+      }
+    }
+
+    async function carregarDoacoes() {
+      try {
+        const res = await fetch(`${API_URL}/doacoes`);
+        const doacoes = await res.json();
+        const lista = document.getElementById("listaDoacoes");
+        lista.innerHTML = "";
+        doacoes.forEach(d => renderDoacao(d, lista));
+      } catch (err) {
+        console.error("Erro ao carregar doações", err);
+      }
+    }
+
+    function renderDoacao(d, lista) {
+      const li = document.createElement("li");
+      li.textContent = `${d.nomeDoador} | ${d.alimento} | ${d.quantidade} | ${d.localizacao} | ${d.categoria} | ${d.status}`;
+
+      const btnEditar = document.createElement("button");
+      btnEditar.textContent = "Editar";
+      btnEditar.onclick = () => editarDoacao(d._id);
+
+      const btnExcluir = document.createElement("button");
+      btnExcluir.textContent = "Excluir";
+      btnExcluir.onclick = () => excluirDoacao(d._id);
+
+      li.appendChild(btnEditar);
+      li.appendChild(btnExcluir);
+      lista.appendChild(li);
+    }
+
+    async function editarDoacao(id) {
+      alert("Função de edição em desenvolvimento para ID: " + id);
+    }
+
+    async function excluirDoacao(id) {
+      if (confirm("Deseja excluir esta doação?")) {
+        await fetch(`${API_URL}/doacoes/${id}`, { method: "DELETE" });
+        carregarDoacoes();
+      }
+    }
   </script>
 </body>
 </html>
