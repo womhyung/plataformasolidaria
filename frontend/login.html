@@ -4,14 +4,59 @@
   <meta charset="UTF-8">
   <title>Login - Plataforma Solidária</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* Estilo inspirado no Instagram */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #fafafa;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .login-container {
+      background: #fff;
+      border: 1px solid #dbdbdb;
+      padding: 40px;
+      width: 350px;
+      text-align: center;
+      border-radius: 8px;
+    }
+    .login-container h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    .login-container input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #dbdbdb;
+      border-radius: 4px;
+    }
+    .login-container button {
+      width: 100%;
+      padding: 10px;
+      background-color: #0095f6;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .login-container button:hover {
+      background-color: #0077cc;
+    }
+  </style>
 </head>
 <body>
-  <h1>Login</h1>
-  <form id="formLogin">
-    <input type="email" name="email" placeholder="Email" required>
-    <input type="password" name="senha" placeholder="Senha" required>
-    <button type="submit">Entrar</button>
-  </form>
+  <div class="login-container">
+    <h1>Plataforma Solidária</h1>
+    <form id="formLogin">
+      <input type="email" name="email" placeholder="Email" required>
+      <input type="password" name="senha" placeholder="Senha" required>
+      <button type="submit">Entrar</button>
+    </form>
+  </div>
 
   <script>
     const API_URL = "https://plataformasolidaria.onrender.com";
@@ -45,16 +90,21 @@
         localStorage.setItem("usuarioLogado", JSON.stringify(usuarioLogado));
 
         // Redireciona conforme o tipo de usuário
-        if (usuarioLogado.role === "admin") {
-          window.location.href = "admin.html";
-        } else if (usuarioLogado.role === "ong") {
-          window.location.href = "ong.html";
-        } else if (usuarioLogado.role === "beneficiario") {
-          window.location.href = "beneficiario.html";
-        } else if (usuarioLogado.role === "doador") {
-          window.location.href = "doador.html";
-        } else {
-          window.location.href = "perfil.html"; // fallback
+        switch (usuarioLogado.role) {
+          case "admin":
+            window.location.href = "admin.html";
+            break;
+          case "ong":
+            window.location.href = "ong.html";
+            break;
+          case "beneficiario":
+            window.location.href = "beneficiario.html";
+            break;
+          case "doador":
+            window.location.href = "doador.html";
+            break;
+          default:
+            window.location.href = "perfil.html"; // fallback
         }
       } catch (err) {
         console.error("❌ Erro na requisição:", err);
