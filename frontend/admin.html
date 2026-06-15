@@ -1,3 +1,5 @@
+meu admin.html atual 
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -49,10 +51,9 @@
       </form>
     </section>
 
-     <!-- Resumo geral -->
+    <!-- Resumo geral -->
     <section>
       <h2>Resumo Geral</h2>
-      <p id="totalMes" style="font-weight:bold;"></p>
       <canvas id="graficoResumo"></canvas>
       <p id="fallbackResumo" style="color:gray;"></p>
     </section>
@@ -115,55 +116,59 @@
     // Exibir gráficos no painel admin
     async function carregarResumoAdmin() {
       try {
-        const res = await fetch(`${API_URL}/stats/doacoes`, {
-          headers: { "Authorization": `Bearer ${usuarioLogado?.token}` }
+        const resDoacoes = await fetch(`${API_URL}/doacoes`);
+        const doacoes = await resDoacoes.json();
+
+        const resEntregas = await fetch(`${API_URL}/entregas`);
+        const entregas = await resEntregas.json();
+
+        const resFamilias = await fetch(`${API_URL}/familias`);
+        const familias = await resFamilias.json();
+
+        const resInstituicoes = await fetch(`${API_URL}/instituicoes`);
+        const instituicoes = await resInstituicoes.json();
+
+        const dadosDoacoes = {};
+        doacoes.forEach(d => {
+          dadosDoacoes[d.alimento] = (dadosDoacoes[d.alimento] || 0) + d.quantidade;
         });
-        const data = await res.json();
-
-        if (!res.ok) {
-          document.getElementById("fallbackResumo").textContent = "Erro ao carregar estatísticas ❌";
-          return;
-        }
-
-        // Exibe total do mês
-        document.getElementById("totalMes").textContent =
-          "Total de doações neste mês: " + data.totalMes;
 
         // Fallbacks
-        if (data.porStatus.length === 0) {
-          document.getElementById("fallbackResumo").textContent = "Nenhum dado de status disponível.";
-        }
-        if (data.porCategoria.length === 0) {
-          document.getElementById("fallbackAlimentos").textContent = "Nenhum dado de categoria disponível.";
+        if (doacoes.length === 0 && entregas.length === 0 && familias.length === 0 && instituicoes.length === 0) {
+          document.getElementById("fallbackResumo").textContent = "Nenhum dado disponível ainda.";
         }
 
-        // Gráfico 1: Doações por status
+        if (Object.keys(dadosDoacoes).length === 0) {
+          document.getElementById("fallbackAlimentos").textContent = "Nenhum alimento registrado ainda.";
+        }
+
+        // Gráfico 1: Resumo
         new Chart(document.getElementById("graficoResumo").getContext("2d"), {
           type: "bar",
           data: {
-            labels: data.porStatus.map(s => s._id),
+            labels: ["Doações", "Entregas", "Famílias", "Instituições"],
             datasets: [{
-              label: "Doações por status",
-              data: data.porStatus.map(s => s.total),
+              label: "Quantidade de Registros",
+              data: [doacoes.length, entregas.length, familias.length, instituicoes.length],
               backgroundColor: ["#9C27B0", "#FF9800", "#4CAF50", "#2196F3"]
             }]
           }
         });
 
-        // Gráfico 2: Distribuição por categoria
+        // Gráfico 2: Alimentos
         new Chart(document.getElementById("graficoAlimentos").getContext("2d"), {
           type: "pie",
           data: {
-            labels: data.porCategoria.map(c => c._id),
+            labels: Object.keys(dadosDoacoes),
             datasets: [{
-              data: data.porCategoria.map(c => c.total),
+              data: Object.values(dadosDoacoes),
               backgroundColor: ["#9C27B0", "#673AB7", "#FF9800", "#607D8B", "#4CAF50", "#2196F3", "#E91E63"]
             }]
           }
         });
       } catch (err) {
         console.error("Erro ao carregar resumo admin", err);
-        document.getElementById("fallbackResumo").textContent = "Erro de conexão com o servidor ❌";
+        alert("Erro ao carregar dados do painel ❌");
       }
     }
 
@@ -171,4 +176,3 @@
   </script>
 </body>
 </html>
- 
