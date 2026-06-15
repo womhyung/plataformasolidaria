@@ -5,14 +5,39 @@
   <title>Login - Plataforma Solidária</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    /* Estilo inspirado no Instagram */
     body {
       font-family: Arial, sans-serif;
       background-color: #fafafa;
+      margin: 0;
+      padding: 0;
+    }
+    nav {
+      background-color: #fff;
+      border-bottom: 1px solid #dbdbdb;
+      padding: 10px 20px;
       display: flex;
-      justify-content: center;
+      justify-content: space-between;
       align-items: center;
-      height: 100vh;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 1000;
+    }
+    nav h2 {
+      margin: 0;
+      font-size: 20px;
+      color: #0095f6;
+    }
+    nav .links a {
+      margin-left: 15px;
+      text-decoration: none;
+      color: #333;
+      font-weight: bold;
+    }
+    nav .search-box input {
+      padding: 6px;
+      border: 1px solid #dbdbdb;
+      border-radius: 4px;
     }
     .login-container {
       background: #fff;
@@ -21,6 +46,7 @@
       width: 350px;
       text-align: center;
       border-radius: 8px;
+      margin: 120px auto; /* espaço abaixo do navbar */
     }
     .login-container h1 {
       font-size: 24px;
@@ -49,8 +75,25 @@
   </style>
 </head>
 <body>
+  <!-- Navbar completo -->
+  <nav>
+    <h2>Plataforma Solidária</h2>
+    <div class="links">
+      <a href="doacoes.html">Doações</a>
+      <a href="instituicoes.html">Instituições</a>
+      <a href="entregas.html">Entregas</a>
+      <a href="avaliacoes.html">Avaliações</a>
+      <a href="perfil.html">Perfil</a>
+      <a href="logout.html">Logout</a>
+    </div>
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Pesquisar...">
+    </div>
+  </nav>
+
+  <!-- Login -->
   <div class="login-container">
-    <h1>Plataforma Solidária</h1>
+    <h1>Login</h1>
     <form id="formLogin">
       <input type="email" name="email" placeholder="Email" required>
       <input type="password" name="senha" placeholder="Senha" required>
@@ -60,6 +103,15 @@
 
   <script>
     const API_URL = "https://plataformasolidaria.onrender.com";
+
+    // Pesquisa com Enter
+    document.getElementById("searchInput").addEventListener("keypress", e => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        alert("Pesquisar por: " + e.target.value);
+        // Aqui você pode implementar a busca real
+      }
+    });
 
     document.getElementById("formLogin").addEventListener("submit", async (e) => {
       e.preventDefault();
