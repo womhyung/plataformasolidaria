@@ -12,6 +12,8 @@ router.post("/", autenticarToken, async (req, res) => {
       quantidade: req.body.quantidade,
       validade: req.body.validade,
       localizacao: req.body.localizacao
+      categoria: req.body.categoria,
+      status: req.body.status || "pendente"
     });
     res.status(201).json(novaDoacao);
   } catch (err) {
