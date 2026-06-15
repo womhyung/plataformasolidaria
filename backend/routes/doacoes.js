@@ -7,14 +7,14 @@ const autenticarToken = require("../middleware/auth");
 router.post("/", autenticarToken, async (req, res) => {
   try {
     const novaDoacao = await Doacao.create({
-      nomeDoador: req.user.nome, // pega o nome do usuário do token
-      alimento: req.body.alimento,
-      quantidade: req.body.quantidade,
-      validade: req.body.validade,
-      localizacao: req.body.localizacao
-      categoria: req.body.categoria,
-      status: req.body.status || "pendente"
-    });
+  nomeDoador: req.user.nome,
+  alimento: req.body.alimento,
+  quantidade: req.body.quantidade,
+  validade: req.body.validade,
+  localizacao: req.body.localizacao,
+  categoria: req.body.categoria, // precisa vir do formulário
+  status: req.body.status || "pendente"
+});
     res.status(201).json(novaDoacao);
   } catch (err) {
     res.status(400).json({ error: err.message });
