@@ -134,14 +134,11 @@
           return;
         }
 
-       // Salva tudo em um único objeto
-        localStorage.setItem("usuarioLogado", JSON.stringify({
-          nome: data.user.nome,
-          role: data.user.role,
-          id: data.user.id,
-          token: data.token
-        }));
-
+        // Salva token e dados básicos no localStorage
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("userId", data.user.id);
+        localStorage.setItem("userRole", data.user.role);
+        localStorage.setItem("userName", data.user.nome);
 
         // Redireciona conforme o tipo de usuário
         switch (data.user.role) {
