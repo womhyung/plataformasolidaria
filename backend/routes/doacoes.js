@@ -6,20 +6,29 @@ const autenticarToken = require("../middleware/auth");
 // CREATE - inserir nova doação (vinculada ao usuário logado)
 router.post("/", autenticarToken, async (req, res) => {
   try {
+    const { alimento, quantidade, validade, localizacao, categoria, status } = req.body;
+
+    // validação simples
+    if (!alimento || !quantidade || !localizacao || !categoria) {
+      return res.status(400).json({ error: "Campos obrigatórios faltando" });
+    }
+
     const novaDoacao = await Doacao.create({
-  nomeDoador: req.user.nome,
-  alimento: req.body.alimento,
-  quantidade: req.body.quantidade,
-  validade: req.body.validade,
-  localizacao: req.body.localizacao,
-  categoria: req.body.categoria, // precisa vir do formulário
-  status: req.body.status || "pendente"
-});
+      nomeDoador: req.user.nome,
+      alimento,
+      quantidade,
+      validade,
+      localizacao,
+      categoria,
+      status: status || "pendente"
+    });
+
     res.status(201).json(novaDoacao);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 });
+
 
 // READ - listar todas as doações (visão geral)
 router.get("/", async (req, res) => {
