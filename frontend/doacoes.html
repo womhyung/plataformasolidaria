@@ -159,9 +159,10 @@ document.getElementById("formDoacao").addEventListener("submit", async (e) => {
      if (res.ok) {
       alert("Doação registrada com sucesso ✅");
       form.reset();
-      carregarDoacoes(); // atualiza lista
+      carregarDoacoes();
     } else {
-      alert("Erro ao registrar doação ❌");
+      const erro = await res.json();
+      alert("Erro ao registrar doação ❌\n" + (erro.message || erro.error));
     }
   } catch (err) {
     console.error("Erro no cadastro de doação:", err);
