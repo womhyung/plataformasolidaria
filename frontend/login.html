@@ -136,9 +136,7 @@
 
         // Salva tudo em um único objeto para ser usado no doacoes.html
         localStorage.setItem("usuarioLogado", JSON.stringify({
-          nome: data.user.nome,
-          role: data.user.role,
-          id: data.user.id,
+          ...data.user,
           token: data.token
         }));
 
