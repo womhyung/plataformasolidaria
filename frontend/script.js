@@ -95,9 +95,11 @@ function logout() {
 
 document.getElementById("formEntrega")?.addEventListener("submit", async e => {
   e.preventDefault();
-  const voluntario = e.target.querySelector("input[name='voluntario']").value;
-  const familiaDestino = e.target.querySelector("input[name='familiaDestino']").value;
-  const alimentoEntregue = e.target.querySelector("input[name='alimentoEntregue']").value;
+  const form = e.target;
+
+  const voluntario = form.elements["voluntario"]?.value || "";
+  const familiaDestino = form.elements["familiaDestino"]?.value || "";
+  const alimentoEntregue = form.elements["alimentoEntregue"]?.value || "";
 
   try {
     const res = await fetch(`${API_URL}/entregas`, {
@@ -107,7 +109,7 @@ document.getElementById("formEntrega")?.addEventListener("submit", async e => {
     });
     if (res.ok) {
       alert("Entrega registrada com sucesso ✅");
-      e.target.reset();
+      form.reset();
       carregarLista("listaEntregas", "entregas");
     } else {
       alert("Erro ao registrar entrega ❌");
@@ -116,6 +118,7 @@ document.getElementById("formEntrega")?.addEventListener("submit", async e => {
     console.error("Erro no cadastro de entrega:", err);
   }
 });
+
 //==============================
 // Cadastro de famílias
 //===============================
@@ -442,9 +445,11 @@ document.getElementById("formEntrega")?.addEventListener("submit", async e => {
 // ===============================
 document.getElementById("formFamilia")?.addEventListener("submit", async e => {
   e.preventDefault();
-  const nomeFamilia = e.target.nomeFamilia.value;
-  const endereco = e.target.endereco.value;
-  const membros = e.target.membros.value;
+  const form = e.target;
+
+  const nomeFamilia = form.elements["nomeFamilia"]?.value || "";
+  const endereco = form.elements["endereco"]?.value || "";
+  const membros = form.elements["membros"]?.value || "";
 
   try {
     const res = await fetch(`${API_URL}/familias`, {
@@ -454,7 +459,7 @@ document.getElementById("formFamilia")?.addEventListener("submit", async e => {
     });
     if (res.ok) {
       alert("Família cadastrada com sucesso ✅");
-      e.target.reset();
+      form.reset();
       carregarLista("listaFamilias", "familias");
     } else {
       alert("Erro ao cadastrar família ❌");
@@ -463,6 +468,7 @@ document.getElementById("formFamilia")?.addEventListener("submit", async e => {
     console.error("Erro no cadastro de família:", err);
   }
 });
+
 
 // ===============================
 // CRUD: Instituições
