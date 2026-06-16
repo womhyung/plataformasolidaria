@@ -87,35 +87,7 @@ function logout() {
   window.location.href = "login.html";
 }
 
-// =======================
-// Cadastro de doações
-// ==========================
 
-document.getElementById("formDoacao")?.addEventListener("submit", async e => {
-  e.preventDefault();
-  const nomeDoador = e.target.querySelector("input[name='nomeDoador']").value;
-  const alimento = e.target.querySelector("input[name='alimento']").value;
-  const quantidade = e.target.querySelector("input[name='quantidade']").value;
-  const validade = e.target.querySelector("input[name='validade']").value;
-  const localizacao = e.target.querySelector("input[name='localizacao']").value;
-
-  try {
-    const res = await fetch(`${API_URL}/doacoes`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nomeDoador, alimento, quantidade, validade, localizacao })
-    });
-    if (res.ok) {
-      alert("Doação registrada com sucesso ✅");
-      e.target.reset();
-      carregarLista("listaDoacoes", "doacoes"); // recarrega lista
-    } else {
-      alert("Erro ao registrar doação ❌");
-    }
-  } catch (err) {
-    console.error("Erro no cadastro de doação:", err);
-  }
-});
 
 //=====================================
 // Cadastro de entregas
@@ -437,34 +409,6 @@ function carregarFeedImagens() {
   feed.innerHTML = "<p>Feed de imagens em construção...</p>";
 }
 
-// ===============================
-// CRUD: Doações
-// ===============================
-document.getElementById("formDoacao")?.addEventListener("submit", async e => {
-  e.preventDefault();
-  const nomeDoador = e.target.nomeDoador.value;
-  const alimento = e.target.alimento.value;
-  const quantidade = e.target.quantidade.value;
-  const validade = e.target.validade.value;
-  const localizacao = e.target.localizacao.value;
-
-  try {
-    const res = await fetch(`${API_URL}/doacoes`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nomeDoador, alimento, quantidade, validade, localizacao })
-    });
-    if (res.ok) {
-      alert("Doação registrada com sucesso ✅");
-      e.target.reset();
-      carregarLista("listaDoacoes", "doacoes");
-    } else {
-      alert("Erro ao registrar doação ❌");
-    }
-  } catch (err) {
-    console.error("Erro no cadastro de doação:", err);
-  }
-});
 
 // ===============================
 // CRUD: Entregas

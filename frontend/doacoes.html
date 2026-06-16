@@ -134,12 +134,12 @@ document.getElementById("formDoacao").addEventListener("submit", async (e) => {
 
   const form = e.target;
   const dados = {
-    alimento: form.alimento.value,
-    quantidade: form.quantidade.value,
-    validade: form.validade.value,
-    localizacao: form.localizacao.value,
-    categoria: form.categoria.value,
-    status: form.status.value
+    alimento: form.elements["alimento"].value,
+    quantidade: form.elements["quantidade"].value,
+    validade: form.elements["validade"].value,
+    localizacao: form.elements["localizacao"].value,
+    categoria: form.elements["categoria"].value,
+    status: form.elements["status"].value
   };
 
   try {
@@ -156,16 +156,15 @@ document.getElementById("formDoacao").addEventListener("submit", async (e) => {
       body: JSON.stringify(dados)
     });
 
-    if (!res.ok) {
-      throw new Error("Erro ao cadastrar doação");
+     if (res.ok) {
+      alert("Doação registrada com sucesso ✅");
+      form.reset();
+      carregarDoacoes(); // atualiza lista
+    } else {
+      alert("Erro ao registrar doação ❌");
     }
-
-    alert("Doação cadastrada com sucesso ✅");
-    form.reset();
-    carregarDoacoes(); // atualiza a lista
   } catch (err) {
-    console.error("Erro ao cadastrar doação:", err);
-    alert("Erro ao cadastrar doação ❌");
+    console.error("Erro no cadastro de doação:", err);
   }
 });
   </script>
