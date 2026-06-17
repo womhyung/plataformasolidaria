@@ -17,7 +17,7 @@ router.post("/", autenticarToken, async (req, res) => {
     const usuario = await User.findById(req.user.id);
 
    const novaDoacao = await Doacao.create({
-    nomeDoador: req.body.nomeDoador,
+    nomeDoador: "TESTE",
     alimento,
     quantidade,
     validade,
