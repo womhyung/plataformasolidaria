@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Doacao = require("../models/Doacao");
 const autenticarToken = require("../middleware/auth");
+const User = require("../models/User");
 
 // CREATE - inserir nova doação (vinculada ao usuário logado)
 router.post("/", autenticarToken, async (req, res) => {
@@ -13,15 +14,17 @@ router.post("/", autenticarToken, async (req, res) => {
       return res.status(400).json({ error: "Campos obrigatórios faltando" });
     }
 
-    const novaDoacao = await Doacao.create({
-      nomeDoador: req.user.nome,
-      alimento,
-      quantidade,
-      validade,
-      localizacao,
-      categoria,
-      status: status || "pendente"
-    });
+    const usuario = await User.findById(req.user.id);
+
+   const novaDoacao = await Doacao.create({
+    nomeDoador: req.body.nomeDoador,
+    alimento,
+    quantidade,
+    validade,
+    localizacao,
+    categoria,
+    status: status || "pendente"
+  });
 
     res.status(201).json(novaDoacao);
   } catch (err) {

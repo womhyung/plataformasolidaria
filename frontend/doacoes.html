@@ -67,7 +67,7 @@
 
     // Preenche o campo oculto com o nome do usuário logado
   const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
-  document.getElementById("nomeDoador").value = usuario?.nome || "";
+  document.getElementById("nomeDoador").value = usuario?.user?.nome || "";
 
     // Pesquisa com Enter
     document.getElementById("pesquisaDoacoes").addEventListener("keypress", e => {
