@@ -25,7 +25,7 @@
   <main>
     <!-- Formulário de cadastro -->
     <section>
-      <h2>Registrar Doação</h2>
+      <h2 id="tituloForm">Registrar Doação</h2>
       <form id="formDoacao">
         <input type="hidden" name="nomeDoador" id="nomeDoador">
         <input type="text" name="alimento" placeholder="Alimento" required>
@@ -85,7 +85,10 @@
 
         doacoes.filter(d =>
           d.nomeDoador.toLowerCase().includes(termo.toLowerCase()) ||
-          d.alimento.toLowerCase().includes(termo.toLowerCase())
+          d.alimento.toLowerCase().includes(termo.toLowerCase()) ||
+          d.localizacao.toLowerCase().includes(termo.toLowerCase()) ||
+          d.categoria.toLowerCase().includes(termo.toLowerCase()) ||
+          d.status.toLowerCase().includes(termo.toLowerCase())
         ).forEach(d => renderDoacao(d, lista));
       } catch (err) {
         console.error("Erro na pesquisa de doações", err);
@@ -129,6 +132,7 @@
         const doacao = await res.json();
 
         const form = document.getElementById("formDoacao");
+         document.getElementById("tituloForm").textContent = "Editar Doação";
         form.elements["nomeDoador"].value = doacao.nomeDoador;
         form.elements["alimento"].value = doacao.alimento;
         form.elements["quantidade"].value = doacao.quantidade;
