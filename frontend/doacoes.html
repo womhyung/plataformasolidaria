@@ -206,7 +206,6 @@ document.getElementById("formDoacao").addEventListener("submit", async (e) => {
 
   try {
     const token = usuario?.token;
-
     const res = await fetch(`${API_URL}/doacoes`, {
       method: "POST",
       headers: {

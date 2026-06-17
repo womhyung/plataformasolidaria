@@ -18,6 +18,7 @@ function autenticarToken(req, res, next) {
     // Salva os dados do usuário no objeto req
     req.user = {
       id: decoded.id,
+      nome: decoded.nome,
       role: decoded.role
     };
 

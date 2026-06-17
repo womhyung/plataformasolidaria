@@ -23,10 +23,14 @@ router.post("/login", async (req, res) => {
 
     // Gera token JWT
     const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET || "segredo",
-      { expiresIn: "1h" }
-    );
+  {
+    id: user._id,
+    nome: user.nome,
+    role: user.role
+  },
+  process.env.JWT_SECRET || "segredo",
+  { expiresIn: "1h" }
+);
 
     // Retorna dados completos do usuário
     res.json({
