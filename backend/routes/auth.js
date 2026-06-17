@@ -33,7 +33,7 @@ router.post("/login", async (req, res) => {
       message: "Login bem-sucedido ✅",
       user: {
         id: user._id,
-        nome: user.nome,
+        nome: user.nome || user.name,
         email: user.email,
         role: user.role,
         bio: user.bio,

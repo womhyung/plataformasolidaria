@@ -27,12 +27,12 @@
     <section>
       <h2>Registrar Doação</h2>
       <form id="formDoacao">
+        <input type="hidden" name="nomeDoador" id="nomeDoador">
         <input type="text" name="alimento" placeholder="Alimento" required>
         <input type="number" name="quantidade" placeholder="Quantidade" required>
         <input type="date" name="validade" required>
         <input type="text" name="localizacao" placeholder="Localização" required>
 
-        <!-- novos campos -->
         <select name="categoria" required>
           <option value="">Selecione a categoria</option>
           <option value="Grãos">Grãos</option>
@@ -64,6 +64,10 @@
       alert("Você saiu do sistema ✅");
       window.location.href = "login.html";
     }
+
+    // Preenche o campo oculto com o nome do usuário logado
+  const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
+  document.getElementById("nomeDoador").value = usuario?.nome || "";
 
     // Pesquisa com Enter
     document.getElementById("pesquisaDoacoes").addEventListener("keypress", e => {
@@ -117,8 +121,60 @@
       lista.appendChild(li);
     }
 
+     // Função de edição
     async function editarDoacao(id) {
-      alert("Função de edição em desenvolvimento para ID: " + id);
+      try {
+        const res = await fetch(`${API_URL}/doacoes/${id}`);
+        if (!res.ok) throw new Error("Erro ao buscar doação");
+        const doacao = await res.json();
+
+        const form = document.getElementById("formDoacao");
+        form.elements["nomeDoador"].value = doacao.nomeDoador;
+        form.elements["alimento"].value = doacao.alimento;
+        form.elements["quantidade"].value = doacao.quantidade;
+        form.elements["validade"].value = doacao.validade?.split("T")[0];
+        form.elements["localizacao"].value = doacao.localizacao;
+        form.elements["categoria"].value = doacao.categoria;
+        form.elements["status"].value = doacao.status;
+
+        // Alterar comportamento do submit para atualizar
+        form.onsubmit = async (e) => {
+          e.preventDefault();
+          const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
+
+          const dadosAtualizados = {
+            nomeDoador: form.elements["nomeDoador"].value,
+            alimento: form.elements["alimento"].value,
+            quantidade: form.elements["quantidade"].value,
+            validade: form.elements["validade"].value,
+            localizacao: form.elements["localizacao"].value,
+            categoria: form.elements["categoria"].value,
+            status: form.elements["status"].value
+          };
+
+          const resUpdate = await fetch(`${API_URL}/doacoes/${id}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${usuario?.token}`
+            },
+            body: JSON.stringify(dadosAtualizados)
+          });
+
+          if (resUpdate.ok) {
+            alert("Doação atualizada com sucesso ✅");
+            form.reset();
+            carregarDoacoes();
+            form.onsubmit = null; // restaura comportamento original
+          } else {
+            const erro = await resUpdate.json();
+            alert("Erro ao atualizar doação ❌\n" + (erro.message || erro.error));
+          }
+        };
+      } catch (err) {
+        console.error("Erro ao editar doação:", err);
+        alert("Não foi possível carregar os dados da doação ❌");
+      }
     }
 
     async function excluirDoacao(id) {
@@ -135,7 +191,7 @@ document.getElementById("formDoacao").addEventListener("submit", async (e) => {
   const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
 
   const dados = {
-    nomeDoador: usuario?.nome,
+    nomeDoador: form.elements["nomeDoador"].value,
     alimento: form.elements["alimento"].value,
     quantidade: form.elements["quantidade"].value,
     validade: form.elements["validade"].value,
