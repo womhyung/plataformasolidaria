@@ -88,37 +88,6 @@ function logout() {
 }
 
 
-
-//=====================================
-// Cadastro de entregas
-//======================================
-
-document.getElementById("formEntrega")?.addEventListener("submit", async e => {
-  e.preventDefault();
-  const form = e.target;
-
-  const voluntario = form.elements["voluntario"]?.value || "";
-  const familiaDestino = form.elements["familiaDestino"]?.value || "";
-  const alimentoEntregue = form.elements["alimentoEntregue"]?.value || "";
-
-  try {
-    const res = await fetch(`${API_URL}/entregas`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ voluntario, familiaDestino, alimentoEntregue })
-    });
-    if (res.ok) {
-      alert("Entrega registrada com sucesso ✅");
-      form.reset();
-      carregarLista("listaEntregas", "entregas");
-    } else {
-      alert("Erro ao registrar entrega ❌");
-    }
-  } catch (err) {
-    console.error("Erro no cadastro de entrega:", err);
-  }
-});
-
 // =============================
 // Cadastro de avaliações
 // ===============================
@@ -358,34 +327,6 @@ function carregarFeedImagens() {
   if (!feed) return;
   feed.innerHTML = "<p>Feed de imagens em construção...</p>";
 }
-
-
-// ===============================
-// CRUD: Entregas
-// ===============================
-document.getElementById("formEntrega")?.addEventListener("submit", async e => {
-  e.preventDefault();
-  const voluntario = e.target.voluntario.value;
-  const familiaDestino = e.target.familiaDestino.value;
-  const alimentoEntregue = e.target.alimentoEntregue.value;
-
-  try {
-    const res = await fetch(`${API_URL}/entregas`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ voluntario, familiaDestino, alimentoEntregue })
-    });
-    if (res.ok) {
-      alert("Entrega registrada com sucesso ✅");
-      e.target.reset();
-      carregarLista("listaEntregas", "entregas");
-    } else {
-      alert("Erro ao registrar entrega ❌");
-    }
-  } catch (err) {
-    console.error("Erro no cadastro de entrega:", err);
-  }
-});
 
 // ===============================
 // CRUD: Avaliações
