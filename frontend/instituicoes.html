@@ -6,73 +6,233 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-  <header>
-    <h1>Gerenciar Instituições</h1>
-    <nav>
-      <a href="perfil.html">Voltar ao Perfil</a>
-      <button onclick="logout()">Sair</button>
-    </nav>
-  </header>
 
-  <main>
-    <!-- Formulário de cadastro -->
-    <section>
-      <h2>Cadastrar Instituição</h2>
-      <form id="formInstituicao">
-        <input type="text" name="nomeInstituicao" placeholder="Nome da Instituição" required>
-        <input type="text" name="endereco" placeholder="Endereço" required>
-        <button type="submit">Cadastrar</button>
-      </form>
-    </section>
+<header>
+  <h1>Gerenciar Instituições</h1>
 
-    <!-- Pesquisa -->
-    <section>
-      <h2>Pesquisar Instituições</h2>
-      <input type="text" id="pesquisaInstituicoes" placeholder="Pesquisar por nome ou endereço">
-    </section>
+  <nav>
+    <a href="perfil.html">Perfil</a>
+    <button onclick="logout()">Sair</button>
 
-    <!-- Lista -->
-    <section>
-      <h2>Lista de Instituições</h2>
-      <ul id="listaInstituicoes"></ul>
-    </section>
-  </main>
+    <input type="text" id="pesquisaInstituicoes" placeholder="Pesquisar instituições...">
+  </nav>
+</header>
 
-  <script src="script.js"></script>
-  <script>
-    const API_URL = "https://plataformasolidaria.onrender.com";
+<main>
 
-    function logout() {
-      localStorage.removeItem("usuarioLogado");
-      window.location.href = "login.html";
+  <!-- FORMULÁRIO -->
+  <section>
+    <h2 id="tituloForm">Cadastrar Instituição</h2>
+
+    <form id="formInstituicao">
+      <input type="text" name="nomeInstituicao" placeholder="Nome da Instituição" required>
+      <input type="text" name="endereco" placeholder="Endereço" required>
+
+      <button type="submit">Salvar</button>
+      <button type="button" onclick="cancelarEdicao()">Cancelar</button>
+    </form>
+  </section>
+
+  <!-- LISTA -->
+  <section>
+    <button onclick="carregarInstituicoes()">Ver Instituições</button>
+    <ul id="listaInstituicoes"></ul>
+  </section>
+
+</main>
+
+<script>
+const API_URL = "https://plataformasolidaria.onrender.com";
+
+/* =========================
+   AUTH
+========================= */
+function logout() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("usuarioLogado");
+  window.location.href = "login.html";
+}
+
+/* =========================
+   ESTADO (CRUD)
+========================= */
+let editandoId = null;
+
+/* =========================
+   LISTAR
+========================= */
+async function carregarInstituicoes() {
+  try {
+    const res = await fetch(`${API_URL}/instituicoes`);
+    const data = await res.json();
+
+    const lista = document.getElementById("listaInstituicoes");
+    lista.innerHTML = "";
+
+    data.forEach(i => renderInstituicao(i, lista));
+
+  } catch (err) {
+    console.error("Erro ao carregar instituições:", err);
+  }
+}
+
+/* =========================
+   RENDER
+========================= */
+function renderInstituicao(i, lista) {
+  const li = document.createElement("li");
+
+  li.textContent = `${i.nomeInstituicao} | ${i.endereco}`;
+
+  const btnEditar = document.createElement("button");
+  btnEditar.textContent = "Editar";
+  btnEditar.onclick = () => iniciarEdicao(i);
+
+  const btnExcluir = document.createElement("button");
+  btnExcluir.textContent = "Excluir";
+  btnExcluir.onclick = () => excluirInstituicao(i._id);
+
+  li.appendChild(btnEditar);
+  li.appendChild(btnExcluir);
+
+  lista.appendChild(li);
+}
+
+/* =========================
+   CREATE / UPDATE
+========================= */
+document.getElementById("formInstituicao").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const form = e.target;
+  const token = localStorage.getItem("token");
+
+  const dados = {
+    nomeInstituicao: form.elements["nomeInstituicao"].value,
+    endereco: form.elements["endereco"].value
+  };
+
+  try {
+
+    let url = `${API_URL}/instituicoes`;
+    let method = "POST";
+
+    if (editandoId) {
+      url = `${API_URL}/instituicoes/${editandoId}`;
+      method = "PUT";
     }
 
-    // Pesquisa simples
-    document.getElementById("pesquisaInstituicoes")?.addEventListener("input", async e => {
-      const termo = e.target.value.toLowerCase();
-      try {
-        const res = await fetch(`${API_URL}/instituicoes`);
-        const instituicoes = await res.json();
+    const res = await fetch(url, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify(dados)
+    });
 
-        const list = document.getElementById("listaInstituicoes");
-        list.innerHTML = "";
+    if (!res.ok) {
+      const err = await res.json();
+      alert(err.message || "Erro ao salvar ❌");
+      return;
+    }
 
-        instituicoes.filter(i =>
-          i.nomeInstituicao.toLowerCase().includes(termo) ||
-          i.endereco.toLowerCase().includes(termo)
-        ).forEach(i => {
-          const li = document.createElement("li");
-          li.textContent = `${i.nomeInstituicao} | ${i.endereco}`;
-          list.appendChild(li);
-        });
-      } catch (err) {
-        console.error("Erro na pesquisa de instituições", err);
+    alert(editandoId ? "Atualizado com sucesso ✅" : "Cadastrado com sucesso ✅");
+
+    form.reset();
+    editandoId = null;
+    document.getElementById("tituloForm").textContent = "Cadastrar Instituição";
+
+    carregarInstituicoes();
+
+  } catch (err) {
+    console.error(err);
+    alert("Erro de conexão");
+  }
+});
+
+/* =========================
+   EDITAR
+========================= */
+function iniciarEdicao(i) {
+  editandoId = i._id;
+
+  const form = document.getElementById("formInstituicao");
+  document.getElementById("tituloForm").textContent = "Editar Instituição";
+
+  form.elements["nomeInstituicao"].value = i.nomeInstituicao;
+  form.elements["endereco"].value = i.endereco;
+}
+
+/* =========================
+   CANCELAR
+========================= */
+function cancelarEdicao() {
+  editandoId = null;
+
+  const form = document.getElementById("formInstituicao");
+  form.reset();
+
+  document.getElementById("tituloForm").textContent = "Cadastrar Instituição";
+}
+
+/* =========================
+   EXCLUIR
+========================= */
+async function excluirInstituicao(id) {
+  const token = localStorage.getItem("token");
+
+  try {
+    const res = await fetch(`${API_URL}/instituicoes/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
       }
     });
 
-    // Carregar lista ao abrir a página
-    carregarLista("listaInstituicoes", "instituicoes");
-  </script>
+    if (!res.ok) {
+      const err = await res.json();
+      alert(err.message || "Erro ao excluir ❌");
+      return;
+    }
+
+    alert("Excluído com sucesso ✅");
+    carregarInstituicoes();
+
+  } catch (err) {
+    console.error(err);
+    alert("Erro de conexão");
+  }
+}
+
+/* =========================
+   BUSCA
+========================= */
+document.getElementById("pesquisaInstituicoes").addEventListener("input", async (e) => {
+  const termo = e.target.value.toLowerCase().trim();
+
+  try {
+    const res = await fetch(`${API_URL}/instituicoes`);
+    const data = await res.json();
+
+    const lista = document.getElementById("listaInstituicoes");
+    lista.innerHTML = "";
+
+    const filtradas = data.filter(i =>
+      (i.nomeInstituicao || "").toLowerCase().includes(termo) ||
+      (i.endereco || "").toLowerCase().includes(termo)
+    );
+
+    filtradas.forEach(i => renderInstituicao(i, lista));
+
+  } catch (err) {
+    console.error("Erro na busca:", err);
+  }
+});
+</script>
+
 </body>
 </html>
