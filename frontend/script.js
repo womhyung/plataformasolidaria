@@ -582,13 +582,24 @@ async function editarRegistro(collection, id) {
 
 async function excluirRegistro(collection, id, li) {
   if (!confirm("Deseja realmente excluir este registro?")) return;
+
   try {
-    const res = await fetch(`${API_URL}/${collection}/${id}`, { method: "DELETE" });
+    const token = localStorage.getItem("token");
+
+    const res = await fetch(`${API_URL}/${collection}/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
+    });
+
     if (res.ok) {
       li.remove();
       alert("Registro excluído ✅");
     } else {
-      alert("Erro ao excluir ❌");
+      const erro = await res.json();
+      console.error(erro);
+      alert(`Erro ao excluir: ${erro.message}`);
     }
   } catch (err) {
     console.error("Erro ao excluir registro:", err);
