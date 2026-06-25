@@ -28,9 +28,9 @@
 
     <form id="formEntrega">
 
-      <!-- VOLUNTÁRIO -->
-      <select name="voluntario" id="voluntarioSelect" required>
-        <option value="">Selecione o voluntário</option>
+      <!-- DOADOR (ANTES VOLUNTÁRIO) -->
+      <select name="doador" id="doadorSelect" required>
+        <option value="">Selecione o doador</option>
       </select>
 
       <!-- FAMÍLIA -->
@@ -87,7 +87,7 @@ function getToken() {
 }
 
 /* =========================
-   CARREGAR SELECTS (NOVA PARTE IMPORTANTE)
+   CARREGAR SELECTS (CORRIGIDO)
 ========================= */
 async function carregarSelects() {
   try {
@@ -95,7 +95,7 @@ async function carregarSelects() {
     const [familiasRes, doacoesRes, usuariosRes] = await Promise.all([
       fetch(`${API_URL}/familias`),
       fetch(`${API_URL}/doacoes`),
-      fetch(`${API_URL}/usuarios`) // voluntários
+      fetch(`${API_URL}/usuarios`)
     ]);
 
     const familias = await familiasRes.json();
@@ -104,23 +104,31 @@ async function carregarSelects() {
 
     const familiaSelect = document.getElementById("familiaSelect");
     const alimentoSelect = document.getElementById("alimentoSelect");
-    const voluntarioSelect = document.getElementById("voluntarioSelect");
+    const doadorSelect = document.getElementById("doadorSelect");
 
     familiaSelect.innerHTML = `<option value="">Selecione a família</option>`;
     alimentoSelect.innerHTML = `<option value="">Selecione o alimento</option>`;
-    voluntarioSelect.innerHTML = `<option value="">Selecione o voluntário</option>`;
+    doadorSelect.innerHTML = `<option value="">Selecione o doador</option>`;
 
     familias.forEach(f => {
-      familiaSelect.innerHTML += `<option value="${f.nomeFamilia}">${f.nomeFamilia}</option>`;
+      if (f?.nomeFamilia) {
+        familiaSelect.innerHTML += `<option value="${f.nomeFamilia}">${f.nomeFamilia}</option>`;
+      }
     });
 
     doacoes.forEach(d => {
-      alimentoSelect.innerHTML += `<option value="${d.alimento}">${d.alimento}</option>`;
+      if (d?.alimento) {
+        alimentoSelect.innerHTML += `<option value="${d.alimento}">${d.alimento}</option>`;
+      }
     });
 
-    usuarios.forEach(u => {
-      voluntarioSelect.innerHTML += `<option value="${u.nome}">${u.nome}</option>`;
-    });
+    usuarios
+      .filter(u => u.role === "doador")
+      .forEach(u => {
+        if (u?.nome) {
+          doadorSelect.innerHTML += `<option value="${u.nome}">${u.nome}</option>`;
+        }
+      });
 
   } catch (err) {
     console.error("Erro ao carregar selects:", err);
@@ -141,7 +149,7 @@ async function carregarEntregas() {
     data.forEach(e => renderEntrega(e, lista));
 
   } catch (err) {
-    console.error(err);
+    console.error("Erro ao carregar entregas:", err);
   }
 }
 
@@ -152,7 +160,7 @@ function renderEntrega(e, lista) {
   const li = document.createElement("li");
 
   li.textContent =
-    `${e.voluntario} | ${e.familiaDestino} | ${e.alimentoEntregue} | ${e.quantidade}`;
+    `${e.doador} | ${e.familiaDestino} | ${e.alimentoEntregue} | ${e.quantidade}`;
 
   const btnEditar = document.createElement("button");
   btnEditar.textContent = "Editar";
@@ -178,7 +186,7 @@ document.getElementById("formEntrega").addEventListener("submit", async (e) => {
   const token = getToken();
 
   const dados = {
-    voluntario: form.elements["voluntario"].value,
+    doador: form.elements["doador"].value,
     familiaDestino: form.elements["familiaDestino"].value,
     alimentoEntregue: form.elements["alimentoEntregue"].value,
     quantidade: form.elements["quantidade"].value
@@ -231,10 +239,10 @@ function editarEntrega(e) {
   const form = document.getElementById("formEntrega");
   document.getElementById("tituloForm").textContent = "Editar Entrega";
 
-  form.elements["voluntario"].value = e.voluntario;
-  form.elements["familiaDestino"].value = e.familiaDestino;
-  form.elements["alimentoEntregue"].value = e.alimentoEntregue;
-  form.elements["quantidade"].value = e.quantidade;
+  form.elements["doador"].value = e.doador || "";
+  form.elements["familiaDestino"].value = e.familiaDestino || "";
+  form.elements["alimentoEntregue"].value = e.alimentoEntregue || "";
+  form.elements["quantidade"].value = e.quantidade || "";
 }
 
 /* =========================
@@ -282,21 +290,26 @@ async function excluirEntrega(id) {
 ========================= */
 document.getElementById("pesquisaEntregas").addEventListener("input", async (e) => {
 
-  const termo = e.target.value.toLowerCase();
+  const termo = e.target.value.toLowerCase().trim();
 
-  const res = await fetch(`${API_URL}/entregas`);
-  const data = await res.json();
+  try {
+    const res = await fetch(`${API_URL}/entregas`);
+    const data = await res.json();
 
-  const filtradas = data.filter(e =>
-    (e.voluntario || "").toLowerCase().includes(termo) ||
-    (e.familiaDestino || "").toLowerCase().includes(termo) ||
-    (e.alimentoEntregue || "").toLowerCase().includes(termo)
-  );
+    const filtradas = data.filter(e =>
+      (e.doador || "").toLowerCase().includes(termo) ||
+      (e.familiaDestino || "").toLowerCase().includes(termo) ||
+      (e.alimentoEntregue || "").toLowerCase().includes(termo)
+    );
 
-  const lista = document.getElementById("listaEntregas");
-  lista.innerHTML = "";
+    const lista = document.getElementById("listaEntregas");
+    lista.innerHTML = "";
 
-  filtradas.forEach(e => renderEntrega(e, lista));
+    filtradas.forEach(e => renderEntrega(e, lista));
+
+  } catch (err) {
+    console.error("Erro na busca:", err);
+  }
 });
 
 /* =========================
