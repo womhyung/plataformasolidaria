@@ -44,6 +44,7 @@
 </main>
 
 <script>
+
 const API_URL = "https://plataformasolidaria.onrender.com";
 
 /* =========================
@@ -56,12 +57,12 @@ function logout() {
 }
 
 /* =========================
-   ESTADO
+   ESTADO GLOBAL
 ========================= */
 let editandoId = null;
 
 /* =========================
-   TOKEN PADRÃO (IGUAL DOAÇÕES)
+   TOKEN PADRÃO
 ========================= */
 function getToken() {
   const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
@@ -74,6 +75,9 @@ function getToken() {
 async function carregarInstituicoes() {
   try {
     const res = await fetch(`${API_URL}/instituicoes`);
+
+    if (!res.ok) throw new Error("Erro ao buscar instituições");
+
     const data = await res.json();
 
     const lista = document.getElementById("listaInstituicoes");
@@ -87,7 +91,8 @@ async function carregarInstituicoes() {
     data.forEach(i => renderInstituicao(i, lista));
 
   } catch (err) {
-    console.error("Erro ao carregar instituições:", err);
+    console.error(err);
+    alert("Erro ao carregar instituições ❌");
   }
 }
 
@@ -101,7 +106,7 @@ function renderInstituicao(i, lista) {
 
   const btnEditar = document.createElement("button");
   btnEditar.textContent = "Editar";
-  btnEditar.onclick = () => editarInstituicao(i._id);
+  btnEditar.onclick = () => editarInstituicao(i);
 
   const btnExcluir = document.createElement("button");
   btnExcluir.textContent = "Excluir";
@@ -114,7 +119,7 @@ function renderInstituicao(i, lista) {
 }
 
 /* =========================
-   CREATE / UPDATE (IGUAL DOAÇÕES)
+   CREATE / UPDATE
 ========================= */
 document.getElementById("formInstituicao").addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -169,23 +174,14 @@ document.getElementById("formInstituicao").addEventListener("submit", async (e) 
 /* =========================
    EDITAR
 ========================= */
-async function editarInstituicao(id) {
-  try {
-    const res = await fetch(`${API_URL}/instituicoes/${id}`);
-    const i = await res.json();
+function editarInstituicao(i) {
+  editandoId = i._id;
 
-    editandoId = id;
+  const form = document.getElementById("formInstituicao");
+  document.getElementById("tituloForm").textContent = "Editar Instituição";
 
-    const form = document.getElementById("formInstituicao");
-    document.getElementById("tituloForm").textContent = "Editar Instituição";
-
-    form.elements["nomeInstituicao"].value = i.nomeInstituicao;
-    form.elements["endereco"].value = i.endereco;
-
-  } catch (err) {
-    console.error(err);
-    alert("Erro ao carregar instituição ❌");
-  }
+  form.elements["nomeInstituicao"].value = i.nomeInstituicao || "";
+  form.elements["endereco"].value = i.endereco || "";
 }
 
 /* =========================
@@ -230,29 +226,40 @@ async function excluirInstituicao(id) {
 }
 
 /* =========================
-   BUSCA (PADRÃO DO DOAÇÕES)
+   BUSCA
 ========================= */
 document.getElementById("pesquisaInstituicoes").addEventListener("input", async (e) => {
+
   const termo = e.target.value.toLowerCase().trim();
 
-  const res = await fetch(`${API_URL}/instituicoes`);
-  const data = await res.json();
+  try {
+    const res = await fetch(`${API_URL}/instituicoes`);
 
-  const filtradas = data.filter(i =>
-    (i.nomeInstituicao || "").toLowerCase().includes(termo) ||
-    (i.endereco || "").toLowerCase().includes(termo)
-  );
+    if (!res.ok) throw new Error("Erro na busca");
 
-  const lista = document.getElementById("listaInstituicoes");
-  lista.innerHTML = "";
+    const data = await res.json();
 
-  if (!filtradas.length) {
-    lista.innerHTML = "<li>Nenhuma instituição encontrada 🔎</li>";
-    return;
+    const filtradas = data.filter(i =>
+      (i.nomeInstituicao || "").toLowerCase().includes(termo) ||
+      (i.endereco || "").toLowerCase().includes(termo)
+    );
+
+    const lista = document.getElementById("listaInstituicoes");
+    lista.innerHTML = "";
+
+    if (!filtradas.length) {
+      lista.innerHTML = "<li>Nenhuma instituição encontrada 🔎</li>";
+      return;
+    }
+
+    filtradas.forEach(i => renderInstituicao(i, lista));
+
+  } catch (err) {
+    console.error(err);
+    alert("Erro ao buscar instituições ❌");
   }
-
-  filtradas.forEach(i => renderInstituicao(i, lista));
 });
+
 </script>
 
 </body>
