@@ -5,68 +5,72 @@
   <title>Perfil do Doador</title>
   <link rel="stylesheet" href="doador.css">
 </head>
+
 <body>
-  <div class="perfil">
-    <!-- Header estilo Instagram -->
-    <div class="header">
-      <img src="default-avatar.png" class="foto-perfil" alt="Foto de perfil">
-      <div class="info">
-        <h2 id="nomeDoador">Williams</h2>
-        <p id="bio">Doador ativo desde 2025</p>
-        <span id="contadorDoacoes">0 doações</span>
-        <div class="acoes">
-          <button onclick="abrirFormularioDoacao()">Nova Doação</button>
-          <button onclick="abrirFormularioEditarPerfil()">Editar Perfil</button>
-          <button onclick="logout()">Sair</button>
-        </div>
+
+<div class="perfil">
+
+  <!-- HEADER -->
+  <div class="header">
+
+    <img src="default-avatar.png" class="foto-perfil" id="fotoPerfil">
+
+    <div class="info">
+      <h2 id="nomeDoador">Carregando...</h2>
+      <p id="bio">Carregando bio...</p>
+
+      <span id="contadorDoacoes">0 doações</span>
+
+      <div class="acoes">
+        <button onclick="abrirFormularioDoacao()">Nova Doação</button>
+        <button onclick="abrirFormularioEditarPerfil()">Editar Perfil</button>
+        <button onclick="logout()">Sair</button>
       </div>
     </div>
 
-    <!-- Feed de doações -->
-    <div class="feed" id="feedDoacoes">
-      <!-- Cards de doações serão carregados via JS -->
-    </div>
   </div>
 
-  <!-- Modal Nova Doação -->
-  <div id="formNovaDoacao" class="modal" style="display:none;">
-    <h3>Nova Doação</h3>
-    <form id="novaDoacaoForm">
-      <label>Alimento:</label>
-      <input type="text" name="alimento" required>
-
-      <label>Quantidade:</label>
-      <input type="number" name="quantidade" required>
-
-      <label>Validade:</label>
-      <input type="text" name="validade" required>
-
-      <label>Localização:</label>
-      <input type="text" name="localizacao" required>
-
-      <button type="submit">Cadastrar</button>
-      <button type="button" onclick="fecharFormularioDoacao()">Cancelar</button>
-    </form>
+  <!-- FEED (Instagram style) -->
+  <div class="feed" id="feedDoacoes">
+    <p>Carregando doações...</p>
   </div>
 
-  <!-- Modal Editar Perfil -->
-  <div id="formEditarPerfil" class="modal" style="display:none;">
-    <h3>Editar Perfil</h3>
-    <form id="editarPerfilForm">
-      <label>Nome:</label>
-      <input type="text" name="nome" id="editarNome" required>
+</div>
 
-      <label>Bio:</label>
-      <input type="text" name="bio" id="editarBio">
+<!-- MODAL DOAÇÃO -->
+<div id="formNovaDoacao" class="modal" style="display:none;">
+  <h3>Nova Doação</h3>
 
-      <label>Foto de Perfil (URL):</label>
-      <input type="text" name="foto" id="editarFoto">
+  <form id="novaDoacaoForm">
 
-      <button type="submit">Salvar</button>
-      <button type="button" onclick="fecharFormularioEditarPerfil()">Cancelar</button>
-    </form>
-  </div>
+    <input type="text" name="alimento" placeholder="Alimento" required>
+    <input type="number" name="quantidade" placeholder="Quantidade" required>
+    <input type="text" name="validade" placeholder="Validade">
+    <input type="text" name="localizacao" placeholder="Localização">
 
-  <script src="doador.js"></script>
+    <button type="submit">Salvar</button>
+    <button type="button" onclick="fecharFormularioDoacao()">Cancelar</button>
+
+  </form>
+</div>
+
+<!-- MODAL PERFIL -->
+<div id="formEditarPerfil" class="modal" style="display:none;">
+  <h3>Editar Perfil</h3>
+
+  <form id="editarPerfilForm">
+
+    <input type="text" id="editarNome" placeholder="Nome">
+    <input type="text" id="editarBio" placeholder="Bio">
+    <input type="text" id="editarFoto" placeholder="URL Foto">
+
+    <button type="submit">Salvar</button>
+    <button type="button" onclick="fecharFormularioEditarPerfil()">Cancelar</button>
+
+  </form>
+</div>
+
+<script src="doador.js"></script>
+
 </body>
 </html>
