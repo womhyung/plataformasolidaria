@@ -16,7 +16,7 @@
     <a href="perfil.html">Perfil</a>
     <button onclick="logout()">Sair</button>
 
-    <input type="text" id="pesquisaInstituicoes" placeholder="Pesquisar instituições...">
+    <input type="text" id="pesquisaInstituicoes" placeholder="Buscar instituições...">
   </nav>
 </header>
 
@@ -50,15 +50,23 @@ const API_URL = "https://plataformasolidaria.onrender.com";
    AUTH
 ========================= */
 function logout() {
-  localStorage.removeItem("token");
   localStorage.removeItem("usuarioLogado");
+  localStorage.removeItem("token");
   window.location.href = "login.html";
 }
 
 /* =========================
-   ESTADO (CRUD)
+   ESTADO
 ========================= */
 let editandoId = null;
+
+/* =========================
+   TOKEN PADRÃO (IGUAL DOAÇÕES)
+========================= */
+function getToken() {
+  const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
+  return usuario?.token;
+}
 
 /* =========================
    LISTAR
@@ -70,6 +78,11 @@ async function carregarInstituicoes() {
 
     const lista = document.getElementById("listaInstituicoes");
     lista.innerHTML = "";
+
+    if (!data.length) {
+      lista.innerHTML = "<li>Nenhuma instituição cadastrada</li>";
+      return;
+    }
 
     data.forEach(i => renderInstituicao(i, lista));
 
@@ -88,7 +101,7 @@ function renderInstituicao(i, lista) {
 
   const btnEditar = document.createElement("button");
   btnEditar.textContent = "Editar";
-  btnEditar.onclick = () => iniciarEdicao(i);
+  btnEditar.onclick = () => editarInstituicao(i._id);
 
   const btnExcluir = document.createElement("button");
   btnExcluir.textContent = "Excluir";
@@ -101,13 +114,13 @@ function renderInstituicao(i, lista) {
 }
 
 /* =========================
-   CREATE / UPDATE
+   CREATE / UPDATE (IGUAL DOAÇÕES)
 ========================= */
 document.getElementById("formInstituicao").addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const form = e.target;
-  const token = localStorage.getItem("token");
+  const token = getToken();
 
   const dados = {
     nomeInstituicao: form.elements["nomeInstituicao"].value,
@@ -156,14 +169,23 @@ document.getElementById("formInstituicao").addEventListener("submit", async (e) 
 /* =========================
    EDITAR
 ========================= */
-function iniciarEdicao(i) {
-  editandoId = i._id;
+async function editarInstituicao(id) {
+  try {
+    const res = await fetch(`${API_URL}/instituicoes/${id}`);
+    const i = await res.json();
 
-  const form = document.getElementById("formInstituicao");
-  document.getElementById("tituloForm").textContent = "Editar Instituição";
+    editandoId = id;
 
-  form.elements["nomeInstituicao"].value = i.nomeInstituicao;
-  form.elements["endereco"].value = i.endereco;
+    const form = document.getElementById("formInstituicao");
+    document.getElementById("tituloForm").textContent = "Editar Instituição";
+
+    form.elements["nomeInstituicao"].value = i.nomeInstituicao;
+    form.elements["endereco"].value = i.endereco;
+
+  } catch (err) {
+    console.error(err);
+    alert("Erro ao carregar instituição ❌");
+  }
 }
 
 /* =========================
@@ -182,13 +204,12 @@ function cancelarEdicao() {
    EXCLUIR
 ========================= */
 async function excluirInstituicao(id) {
-  const token = localStorage.getItem("token");
+  const token = getToken();
 
   try {
     const res = await fetch(`${API_URL}/instituicoes/${id}`, {
       method: "DELETE",
       headers: {
-        "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
       }
     });
@@ -209,28 +230,28 @@ async function excluirInstituicao(id) {
 }
 
 /* =========================
-   BUSCA
+   BUSCA (PADRÃO DO DOAÇÕES)
 ========================= */
 document.getElementById("pesquisaInstituicoes").addEventListener("input", async (e) => {
   const termo = e.target.value.toLowerCase().trim();
 
-  try {
-    const res = await fetch(`${API_URL}/instituicoes`);
-    const data = await res.json();
+  const res = await fetch(`${API_URL}/instituicoes`);
+  const data = await res.json();
 
-    const lista = document.getElementById("listaInstituicoes");
-    lista.innerHTML = "";
+  const filtradas = data.filter(i =>
+    (i.nomeInstituicao || "").toLowerCase().includes(termo) ||
+    (i.endereco || "").toLowerCase().includes(termo)
+  );
 
-    const filtradas = data.filter(i =>
-      (i.nomeInstituicao || "").toLowerCase().includes(termo) ||
-      (i.endereco || "").toLowerCase().includes(termo)
-    );
+  const lista = document.getElementById("listaInstituicoes");
+  lista.innerHTML = "";
 
-    filtradas.forEach(i => renderInstituicao(i, lista));
-
-  } catch (err) {
-    console.error("Erro na busca:", err);
+  if (!filtradas.length) {
+    lista.innerHTML = "<li>Nenhuma instituição encontrada 🔎</li>";
+    return;
   }
+
+  filtradas.forEach(i => renderInstituicao(i, lista));
 });
 </script>
 

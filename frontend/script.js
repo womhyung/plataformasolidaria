@@ -146,32 +146,7 @@ document.getElementById("formFamilia")?.addEventListener("submit", async e => {
     console.error("Erro no cadastro de família:", err);
   }
 });
-// ==========================
-// Cadastro de instituições
-//============================
 
-document.getElementById("formInstituicao")?.addEventListener("submit", async e => {
-  e.preventDefault();
-  const nomeInstituicao = e.target.querySelector("input[name='nomeInstituicao']").value;
-  const endereco = e.target.querySelector("input[name='endereco']").value;
-
-  try {
-    const res = await fetch(`${API_URL}/instituicoes`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nomeInstituicao, endereco })
-    });
-    if (res.ok) {
-      alert("Instituição cadastrada com sucesso ✅");
-      e.target.reset();
-      carregarLista("listaInstituicoes", "instituicoes");
-    } else {
-      alert("Erro ao cadastrar instituição ❌");
-    }
-  } catch (err) {
-    console.error("Erro no cadastro de instituição:", err);
-  }
-});
 // =============================
 // Cadastro de avaliações
 // ===============================
@@ -469,32 +444,6 @@ document.getElementById("formFamilia")?.addEventListener("submit", async e => {
   }
 });
 
-
-// ===============================
-// CRUD: Instituições
-// ===============================
-document.getElementById("formInstituicao")?.addEventListener("submit", async e => {
-  e.preventDefault();
-  const nomeInstituicao = e.target.nomeInstituicao.value;
-  const endereco = e.target.endereco.value;
-
-  try {
-    const res = await fetch(`${API_URL}/instituicoes`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nomeInstituicao, endereco })
-    });
-    if (res.ok) {
-      alert("Instituição cadastrada com sucesso ✅");
-      e.target.reset();
-      carregarLista("listaInstituicoes", "instituicoes");
-    } else {
-      alert("Erro ao cadastrar instituição ❌");
-    }
-  } catch (err) {
-    console.error("Erro no cadastro de instituição:", err);
-  }
-});
 
 // ===============================
 // CRUD: Avaliações
