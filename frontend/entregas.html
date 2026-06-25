@@ -72,16 +72,29 @@ function getToken() {
 ========================= */
 async function carregarEntregas() {
   try {
+
     const res = await fetch(`${API_URL}/entregas`);
     const data = await res.json();
 
     const lista = document.getElementById("listaEntregas");
     lista.innerHTML = "";
 
+    if (!Array.isArray(data)) {
+
+      console.error("Resposta inválida:", data);
+
+      lista.innerHTML =
+        "<li>Erro ao carregar entregas</li>";
+
+      return;
+    }
+
     data.forEach(e => renderEntrega(e, lista));
 
   } catch (err) {
+
     console.error("Erro ao carregar entregas:", err);
+
   }
 }
 
