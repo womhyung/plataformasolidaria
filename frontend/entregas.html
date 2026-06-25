@@ -4,39 +4,68 @@
   <meta charset="UTF-8">
   <title>Entregas - Plataforma Solidária</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<h1>Gerenciar Entregas</h1>
+<header>
+  <h1>Gerenciar Entregas</h1>
 
-<!-- FORMULÁRIO -->
-<section>
-  <h2 id="tituloForm">Registrar Entrega</h2>
+  <nav>
+    <a href="perfil.html">Perfil</a>
+    <button onclick="logout()">Sair</button>
 
-  <form id="formEntrega">
+    <input type="text" id="pesquisaEntregas" placeholder="Buscar entregas...">
+  </nav>
+</header>
 
-    <input type="text" name="voluntario" placeholder="Doador responsável" required>
-    <input type="text" name="familiaDestino" placeholder="Família destino" required>
-    <input type="text" name="alimentoEntregue" placeholder="Alimento entregue" required>
-    <input type="number" name="quantidade" placeholder="Quantidade" required>
+<main>
 
-    <button type="submit">Salvar</button>
-    <button type="button" onclick="cancelarEdicao()">Cancelar</button>
-  </form>
-</section>
+  <!-- FORMULÁRIO -->
+  <section>
+    <h2 id="tituloForm">Registrar Entrega</h2>
 
-<!-- LISTA -->
-<section>
-  <button onclick="carregarEntregas()">Carregar Entregas</button>
-  <ul id="listaEntregas"></ul>
-</section>
+    <form id="formEntrega">
+
+      <input type="text" name="voluntario" placeholder="Doador responsável" required>
+      <input type="text" name="familiaDestino" placeholder="Família destino" required>
+      <input type="text" name="alimentoEntregue" placeholder="Alimento entregue" required>
+      <input type="number" name="quantidade" placeholder="Quantidade" required>
+
+      <button type="submit">Salvar</button>
+      <button type="button" onclick="cancelarEdicao()">Cancelar</button>
+
+    </form>
+  </section>
+
+  <!-- LISTA -->
+  <section>
+    <button onclick="carregarEntregas()">Ver Entregas</button>
+    <ul id="listaEntregas"></ul>
+  </section>
+
+</main>
 
 <script>
 
 const API_URL = "https://plataformasolidaria.onrender.com";
 
 let editandoId = null;
+
+/* =========================
+   AUTH
+========================= */
+function logout() {
+  localStorage.removeItem("usuarioLogado");
+  localStorage.removeItem("token");
+  window.location.href = "login.html";
+}
+
+function getToken() {
+  const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
+  return usuario?.token;
+}
 
 /* =========================
    LISTAR
@@ -52,7 +81,7 @@ async function carregarEntregas() {
     data.forEach(e => renderEntrega(e, lista));
 
   } catch (err) {
-    console.error("Erro ao listar:", err);
+    console.error("Erro ao carregar entregas:", err);
   }
 }
 
@@ -86,12 +115,13 @@ document.getElementById("formEntrega").addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const form = e.target;
+  const token = getToken();
 
   const dados = {
-    voluntario: form.voluntario.value,
-    familiaDestino: form.familiaDestino.value,
-    alimentoEntregue: form.alimentoEntregue.value,
-    quantidade: Number(form.quantidade.value)
+    voluntario: form.elements["voluntario"].value,
+    familiaDestino: form.elements["familiaDestino"].value,
+    alimentoEntregue: form.elements["alimentoEntregue"].value,
+    quantidade: Number(form.elements["quantidade"].value)
   };
 
   try {
@@ -107,7 +137,8 @@ document.getElementById("formEntrega").addEventListener("submit", async (e) => {
     const res = await fetch(url, {
       method,
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
       },
       body: JSON.stringify(dados)
     });
@@ -129,7 +160,8 @@ document.getElementById("formEntrega").addEventListener("submit", async (e) => {
     carregarEntregas();
 
   } catch (err) {
-    console.error("Erro:", err);
+    console.error("Erro ao salvar entrega:", err);
+    alert("Erro de conexão");
   }
 });
 
@@ -143,10 +175,10 @@ function editarEntrega(e) {
 
   document.getElementById("tituloForm").textContent = "Editar Entrega";
 
-  form.voluntario.value = e.voluntario;
-  form.familiaDestino.value = e.familiaDestino;
-  form.alimentoEntregue.value = e.alimentoEntregue;
-  form.quantidade.value = e.quantidade;
+  form.elements["voluntario"].value = e.voluntario || "";
+  form.elements["familiaDestino"].value = e.familiaDestino || "";
+  form.elements["alimentoEntregue"].value = e.alimentoEntregue || "";
+  form.elements["quantidade"].value = e.quantidade || "";
 }
 
 /* =========================
@@ -155,7 +187,9 @@ function editarEntrega(e) {
 function cancelarEdicao() {
   editandoId = null;
 
-  document.getElementById("formEntrega").reset();
+  const form = document.getElementById("formEntrega");
+  form.reset();
+
   document.getElementById("tituloForm").textContent = "Registrar Entrega";
 }
 
@@ -163,9 +197,14 @@ function cancelarEdicao() {
    EXCLUIR
 ========================= */
 async function excluirEntrega(id) {
+  const token = getToken();
+
   try {
     const res = await fetch(`${API_URL}/entregas/${id}`, {
-      method: "DELETE"
+      method: "DELETE",
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
     });
 
     if (!res.ok) {
@@ -178,9 +217,31 @@ async function excluirEntrega(id) {
     carregarEntregas();
 
   } catch (err) {
-    console.error(err);
+    console.error("Erro ao excluir:", err);
   }
 }
+
+/* =========================
+   BUSCA
+========================= */
+document.getElementById("pesquisaEntregas").addEventListener("input", async (e) => {
+
+  const termo = e.target.value.toLowerCase();
+
+  const res = await fetch(`${API_URL}/entregas`);
+  const data = await res.json();
+
+  const filtradas = data.filter(e =>
+    (e.voluntario || "").toLowerCase().includes(termo) ||
+    (e.familiaDestino || "").toLowerCase().includes(termo) ||
+    (e.alimentoEntregue || "").toLowerCase().includes(termo)
+  );
+
+  const lista = document.getElementById("listaEntregas");
+  lista.innerHTML = "";
+
+  filtradas.forEach(e => renderEntrega(e, lista));
+});
 
 /* INIT */
 carregarEntregas();
