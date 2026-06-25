@@ -53,6 +53,25 @@ router.get("/minhas", autenticarToken, async (req, res) => {
   }
 });
 
+
+// READ - buscar doação por ID
+router.get("/:id", async (req, res) => {
+  try {
+    const doacao = await Doacao.findById(req.params.id);
+
+    if (!doacao) {
+      return res.status(404).json({
+        message: "Doação não encontrada"
+      });
+    }
+
+    res.json(doacao);
+  } catch (err) {
+    res.status(500).json({
+      error: err.message
+    });
+  }
+});
 // UPDATE - atualizar doação por ID
 router.put("/:id", autenticarToken, async (req, res) => {
   try {
