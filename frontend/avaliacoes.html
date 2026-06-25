@@ -6,73 +6,233 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-  <header>
-    <h1>Gerenciar Avaliações</h1>
-    <nav>
-      <a href="perfil.html">Voltar ao Perfil</a>
-      <button onclick="logout()">Sair</button>
-    </nav>
-  </header>
 
-  <main>
-    <!-- Formulário de cadastro -->
-    <section>
-      <h2>Enviar Avaliação</h2>
-      <form id="formAvaliacao">
-        <input type="text" name="instituicao" placeholder="Instituição" required>
-        <textarea name="feedback" placeholder="Feedback" required></textarea>
-        <button type="submit">Enviar</button>
-      </form>
-    </section>
+<header>
+  <h1>Gerenciar Avaliações</h1>
 
-    <!-- Pesquisa -->
-    <section>
-      <h2>Pesquisar Avaliações</h2>
-      <input type="text" id="pesquisaAvaliacoes" placeholder="Pesquisar por instituição ou feedback">
-    </section>
+  <nav>
+    <a href="perfil.html">Perfil</a>
+    <button onclick="logout()">Sair</button>
 
-    <!-- Lista -->
-    <section>
-      <h2>Lista de Avaliações</h2>
-      <ul id="listaAvaliacoes"></ul>
-    </section>
-  </main>
+    <input type="text" id="pesquisaAvaliacoes" placeholder="Buscar avaliações...">
+  </nav>
+</header>
 
-  <script src="script.js"></script>
-  <script>
-    const API_URL = "https://plataformasolidaria.onrender.com";
+<main>
 
-    function logout() {
-      localStorage.removeItem("usuarioLogado");
-      window.location.href = "login.html";
+  <!-- FORM -->
+  <section>
+    <h2 id="tituloForm">Enviar Avaliação</h2>
+
+    <form id="formAvaliacao">
+
+      <input type="text" name="instituicao" placeholder="Instituição" required>
+      <textarea name="feedback" placeholder="Feedback" required></textarea>
+
+      <button type="submit">Salvar</button>
+      <button type="button" onclick="cancelarEdicao()">Cancelar</button>
+
+    </form>
+  </section>
+
+  <!-- LISTA -->
+  <section>
+    <button onclick="carregarAvaliacoes()">Ver Avaliações</button>
+    <ul id="listaAvaliacoes"></ul>
+  </section>
+
+</main>
+
+<script>
+
+const API_URL = "https://plataformasolidaria.onrender.com";
+
+let editandoId = null;
+
+/* =========================
+   AUTH
+========================= */
+function logout() {
+  localStorage.removeItem("usuarioLogado");
+  localStorage.removeItem("token");
+  window.location.href = "login.html";
+}
+
+function getToken() {
+  const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
+  return usuario?.token;
+}
+
+/* =========================
+   LISTAR
+========================= */
+async function carregarAvaliacoes() {
+  try {
+    const res = await fetch(`${API_URL}/avaliacoes`);
+    const data = await res.json();
+
+    const lista = document.getElementById("listaAvaliacoes");
+    lista.innerHTML = "";
+
+    data.forEach(a => renderAvaliacao(a, lista));
+
+  } catch (err) {
+    console.error("Erro ao carregar avaliações:", err);
+  }
+}
+
+/* =========================
+   RENDER
+========================= */
+function renderAvaliacao(a, lista) {
+  const li = document.createElement("li");
+
+  li.textContent = `${a.instituicao} | ${a.feedback}`;
+
+  const btnEditar = document.createElement("button");
+  btnEditar.textContent = "Editar";
+  btnEditar.onclick = () => editarAvaliacao(a);
+
+  const btnExcluir = document.createElement("button");
+  btnExcluir.textContent = "Excluir";
+  btnExcluir.onclick = () => excluirAvaliacao(a._id);
+
+  li.appendChild(btnEditar);
+  li.appendChild(btnExcluir);
+
+  lista.appendChild(li);
+}
+
+/* =========================
+   CREATE / UPDATE
+========================= */
+document.getElementById("formAvaliacao").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const form = e.target;
+  const token = getToken();
+
+  const dados = {
+    instituicao: form.elements["instituicao"].value,
+    feedback: form.elements["feedback"].value
+  };
+
+  try {
+
+    let url = `${API_URL}/avaliacoes`;
+    let method = "POST";
+
+    if (editandoId) {
+      url = `${API_URL}/avaliacoes/${editandoId}`;
+      method = "PUT";
     }
 
-    // Pesquisa simples
-    document.getElementById("pesquisaAvaliacoes")?.addEventListener("input", async e => {
-      const termo = e.target.value.toLowerCase();
-      try {
-        const res = await fetch(`${API_URL}/avaliacoes`);
-        const avaliacoes = await res.json();
+    const res = await fetch(url, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify(dados)
+    });
 
-        const list = document.getElementById("listaAvaliacoes");
-        list.innerHTML = "";
+    if (!res.ok) {
+      alert("Erro ao salvar ❌");
+      return;
+    }
 
-        avaliacoes.filter(a =>
-          a.instituicao.toLowerCase().includes(termo) ||
-          a.feedback.toLowerCase().includes(termo)
-        ).forEach(a => {
-          const li = document.createElement("li");
-          li.textContent = `${a.instituicao} | ${a.feedback}`;
-          list.appendChild(li);
-        });
-      } catch (err) {
-        console.error("Erro na pesquisa de avaliações", err);
+    alert(editandoId ? "Atualizado com sucesso ✅" : "Cadastrado com sucesso ✅");
+
+    form.reset();
+    editandoId = null;
+    document.getElementById("tituloForm").textContent = "Enviar Avaliação";
+
+    carregarAvaliacoes();
+
+  } catch (err) {
+    console.error(err);
+  }
+});
+
+/* =========================
+   EDITAR
+========================= */
+function editarAvaliacao(a) {
+  editandoId = a._id;
+
+  const form = document.getElementById("formAvaliacao");
+
+  document.getElementById("tituloForm").textContent = "Editar Avaliação";
+
+  form.elements["instituicao"].value = a.instituicao || "";
+  form.elements["feedback"].value = a.feedback || "";
+}
+
+/* =========================
+   CANCELAR
+========================= */
+function cancelarEdicao() {
+  editandoId = null;
+
+  const form = document.getElementById("formAvaliacao");
+  form.reset();
+
+  document.getElementById("tituloForm").textContent = "Enviar Avaliação";
+}
+
+/* =========================
+   EXCLUIR
+========================= */
+async function excluirAvaliacao(id) {
+  const token = getToken();
+
+  try {
+    const res = await fetch(`${API_URL}/avaliacoes/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Authorization": `Bearer ${token}`
       }
     });
 
-    // Carregar lista ao abrir a página
-    carregarLista("listaAvaliacoes", "avaliacoes");
-  </script>
+    if (res.ok) {
+      alert("Excluído com sucesso ✅");
+      carregarAvaliacoes();
+    } else {
+      alert("Erro ao excluir ❌");
+    }
+
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+/* =========================
+   BUSCA
+========================= */
+document.getElementById("pesquisaAvaliacoes").addEventListener("input", async (e) => {
+
+  const termo = e.target.value.toLowerCase();
+
+  const res = await fetch(`${API_URL}/avaliacoes`);
+  const data = await res.json();
+
+  const filtradas = data.filter(a =>
+    (a.instituicao || "").toLowerCase().includes(termo) ||
+    (a.feedback || "").toLowerCase().includes(termo)
+  );
+
+  const lista = document.getElementById("listaAvaliacoes");
+  lista.innerHTML = "";
+
+  filtradas.forEach(a => renderAvaliacao(a, lista));
+});
+
+/* INIT */
+carregarAvaliacoes();
+
+</script>
+
 </body>
 </html>

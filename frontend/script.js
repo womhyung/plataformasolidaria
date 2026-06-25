@@ -88,32 +88,6 @@ function logout() {
 }
 
 
-// =============================
-// Cadastro de avaliações
-// ===============================
-document.getElementById("formAvaliacao")?.addEventListener("submit", async e => {
-  e.preventDefault();
-  const instituicao = e.target.querySelector("input[name='instituicao']").value;
-  const feedback = e.target.querySelector("textarea[name='feedback']").value;
-
-  try {
-    const res = await fetch(`${API_URL}/avaliacoes`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ instituicao, feedback })
-    });
-    if (res.ok) {
-      alert("Avaliação enviada com sucesso ✅");
-      e.target.reset();
-      carregarLista("listaAvaliacoes", "avaliacoes"); // recarrega lista
-    } else {
-      alert("Erro ao enviar avaliação ❌");
-    }
-  } catch (err) {
-    console.error("Erro no cadastro de avaliação:", err);
-  }
-});
-
 
 // ===============================
 // Controle de perfis
@@ -328,31 +302,6 @@ function carregarFeedImagens() {
   feed.innerHTML = "<p>Feed de imagens em construção...</p>";
 }
 
-// ===============================
-// CRUD: Avaliações
-// ===============================
-document.getElementById("formAvaliacao")?.addEventListener("submit", async e => {
-  e.preventDefault();
-  const instituicao = e.target.instituicao.value;
-  const feedback = e.target.feedback.value;
-
-  try {
-    const res = await fetch(`${API_URL}/avaliacoes`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ instituicao, feedback })
-    });
-    if (res.ok) {
-      alert("Avaliação enviada com sucesso ✅");
-      e.target.reset();
-      carregarLista("listaAvaliacoes", "avaliacoes");
-    } else {
-      alert("Erro ao enviar avaliação ❌");
-    }
-  } catch (err) {
-    console.error("Erro no cadastro de avaliação:", err);
-  }
-});
 
 // ===============================
 // Funções genéricas CRUD
