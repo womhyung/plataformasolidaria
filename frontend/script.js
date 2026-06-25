@@ -119,34 +119,6 @@ document.getElementById("formEntrega")?.addEventListener("submit", async e => {
   }
 });
 
-//==============================
-// Cadastro de famílias
-//===============================
-
-document.getElementById("formFamilia")?.addEventListener("submit", async e => {
-  e.preventDefault();
-  const nomeFamilia = e.target.querySelector("input[name='nomeFamilia']").value;
-  const endereco = e.target.querySelector("input[name='endereco']").value;
-  const membros = e.target.querySelector("input[name='membros']").value;
-
-  try {
-    const res = await fetch(`${API_URL}/familias`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nomeFamilia, endereco, membros })
-    });
-    if (res.ok) {
-      alert("Família cadastrada com sucesso ✅");
-      e.target.reset();
-      carregarLista("listaFamilias", "familias");
-    } else {
-      alert("Erro ao cadastrar família ❌");
-    }
-  } catch (err) {
-    console.error("Erro no cadastro de família:", err);
-  }
-});
-
 // =============================
 // Cadastro de avaliações
 // ===============================
@@ -414,36 +386,6 @@ document.getElementById("formEntrega")?.addEventListener("submit", async e => {
     console.error("Erro no cadastro de entrega:", err);
   }
 });
-
-// ===============================
-// CRUD: Famílias
-// ===============================
-document.getElementById("formFamilia")?.addEventListener("submit", async e => {
-  e.preventDefault();
-  const form = e.target;
-
-  const nomeFamilia = form.elements["nomeFamilia"]?.value || "";
-  const endereco = form.elements["endereco"]?.value || "";
-  const membros = form.elements["membros"]?.value || "";
-
-  try {
-    const res = await fetch(`${API_URL}/familias`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nomeFamilia, endereco, membros })
-    });
-    if (res.ok) {
-      alert("Família cadastrada com sucesso ✅");
-      form.reset();
-      carregarLista("listaFamilias", "familias");
-    } else {
-      alert("Erro ao cadastrar família ❌");
-    }
-  } catch (err) {
-    console.error("Erro no cadastro de família:", err);
-  }
-});
-
 
 // ===============================
 // CRUD: Avaliações

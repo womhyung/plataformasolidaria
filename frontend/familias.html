@@ -6,75 +6,264 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-  <header>
-    <h1>Gerenciar Famílias</h1>
-    <nav>
-      <a href="perfil.html">Voltar ao Perfil</a>
-      <button onclick="logout()">Sair</button>
-    </nav>
-  </header>
 
-  <main>
-    <!-- Formulário de cadastro -->
-    <section>
-      <h2>Cadastrar Família</h2>
-      <form id="formFamilia">
-        <input type="text" name="nomeFamilia" placeholder="Nome da Família" required>
-        <input type="text" name="endereco" placeholder="Endereço" required>
-        <input type="number" name="membros" placeholder="Número de Membros" required>
-        <button type="submit">Cadastrar</button>
-      </form>
-    </section>
+<header>
+  <h1>Gerenciar Famílias</h1>
 
-    <!-- Pesquisa -->
-    <section>
-      <h2>Pesquisar Famílias</h2>
-      <input type="text" id="pesquisaFamilias" placeholder="Pesquisar por nome ou endereço">
-    </section>
+  <nav>
+    <a href="perfil.html">Perfil</a>
+    <button onclick="logout()">Sair</button>
 
-    <!-- Lista -->
-    <section>
-      <h2>Lista de Famílias</h2>
-      <ul id="listaFamilias"></ul>
-    </section>
-  </main>
+    <input type="text" id="pesquisaFamilias" placeholder="Buscar famílias...">
+  </nav>
+</header>
 
-  <script src="script.js"></script>
-  <script>
-    const API_URL = "https://plataformasolidaria.onrender.com";
+<main>
 
-    function logout() {
-      localStorage.removeItem("usuarioLogado");
-      alert("Você saiu do sistema ✅");
-      window.location.href = "login.html";
+  <!-- FORMULÁRIO -->
+  <section>
+    <h2 id="tituloForm">Cadastrar Família</h2>
+
+    <form id="formFamilia">
+      <input type="text" name="nomeFamilia" placeholder="Nome da Família" required>
+      <input type="text" name="endereco" placeholder="Endereço" required>
+      <input type="number" name="membros" placeholder="Número de Membros" required>
+
+      <button type="submit">Salvar</button>
+      <button type="button" onclick="cancelarEdicao()">Cancelar</button>
+    </form>
+  </section>
+
+  <!-- LISTA -->
+  <section>
+    <button onclick="carregarFamilias()">Ver Famílias</button>
+    <ul id="listaFamilias"></ul>
+  </section>
+
+</main>
+
+<script>
+
+const API_URL = "https://plataformasolidaria.onrender.com";
+
+/* =========================
+   AUTH
+========================= */
+function logout() {
+  localStorage.removeItem("usuarioLogado");
+  localStorage.removeItem("token");
+  window.location.href = "login.html";
+}
+
+/* =========================
+   ESTADO
+========================= */
+let editandoId = null;
+
+/* =========================
+   TOKEN
+========================= */
+function getToken() {
+  const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
+  return usuario?.token;
+}
+
+/* =========================
+   LISTAR
+========================= */
+async function carregarFamilias() {
+  try {
+    const res = await fetch(`${API_URL}/familias`);
+
+    if (!res.ok) throw new Error("Erro ao carregar famílias");
+
+    const data = await res.json();
+
+    const lista = document.getElementById("listaFamilias");
+    lista.innerHTML = "";
+
+    if (!data.length) {
+      lista.innerHTML = "<li>Nenhuma família cadastrada</li>";
+      return;
     }
 
-    // Pesquisa simples
-    document.getElementById("pesquisaFamilias")?.addEventListener("input", async e => {
-      const termo = e.target.value.toLowerCase();
-      try {
-        const res = await fetch(`${API_URL}/familias`);
-        const familias = await res.json();
+    data.forEach(f => renderFamilia(f, lista));
 
-        const list = document.getElementById("listaFamilias");
-        list.innerHTML = "";
+  } catch (err) {
+    console.error(err);
+    alert("Erro ao carregar famílias ❌");
+  }
+}
 
-        familias.filter(f =>
-          f.nomeFamilia.toLowerCase().includes(termo) ||
-          f.endereco.toLowerCase().includes(termo)
-        ).forEach(f => {
-          const li = document.createElement("li");
-          li.textContent = `${f.nomeFamilia} | ${f.endereco} | ${f.membros} membros`;
-          list.appendChild(li);
-        });
-      } catch (err) {
-        console.error("Erro na pesquisa de famílias", err);
+/* =========================
+   RENDER
+========================= */
+function renderFamilia(f, lista) {
+  const li = document.createElement("li");
+
+  li.textContent = `${f.nomeFamilia} | ${f.endereco} | ${f.membros} membros`;
+
+  const btnEditar = document.createElement("button");
+  btnEditar.textContent = "Editar";
+  btnEditar.onclick = () => editarFamilia(f);
+
+  const btnExcluir = document.createElement("button");
+  btnExcluir.textContent = "Excluir";
+  btnExcluir.onclick = () => excluirFamilia(f._id);
+
+  li.appendChild(btnEditar);
+  li.appendChild(btnExcluir);
+
+  lista.appendChild(li);
+}
+
+/* =========================
+   CREATE / UPDATE
+========================= */
+document.getElementById("formFamilia").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const form = e.target;
+  const token = getToken();
+
+  const dados = {
+    nomeFamilia: form.elements["nomeFamilia"].value,
+    endereco: form.elements["endereco"].value,
+    membros: form.elements["membros"].value
+  };
+
+  try {
+
+    let url = `${API_URL}/familias`;
+    let method = "POST";
+
+    if (editandoId) {
+      url = `${API_URL}/familias/${editandoId}`;
+      method = "PUT";
+    }
+
+    const res = await fetch(url, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify(dados)
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      alert(err.message || "Erro ao salvar ❌");
+      return;
+    }
+
+    alert(editandoId ? "Atualizado com sucesso ✅" : "Cadastrado com sucesso ✅");
+
+    form.reset();
+    editandoId = null;
+    document.getElementById("tituloForm").textContent = "Cadastrar Família";
+
+    carregarFamilias();
+
+  } catch (err) {
+    console.error(err);
+    alert("Erro de conexão");
+  }
+});
+
+/* =========================
+   EDITAR
+========================= */
+function editarFamilia(f) {
+  editandoId = f._id;
+
+  const form = document.getElementById("formFamilia");
+  document.getElementById("tituloForm").textContent = "Editar Família";
+
+  form.elements["nomeFamilia"].value = f.nomeFamilia || "";
+  form.elements["endereco"].value = f.endereco || "";
+  form.elements["membros"].value = f.membros || "";
+}
+
+/* =========================
+   CANCELAR
+========================= */
+function cancelarEdicao() {
+  editandoId = null;
+
+  const form = document.getElementById("formFamilia");
+  form.reset();
+
+  document.getElementById("tituloForm").textContent = "Cadastrar Família";
+}
+
+/* =========================
+   EXCLUIR
+========================= */
+async function excluirFamilia(id) {
+  const token = getToken();
+
+  try {
+    const res = await fetch(`${API_URL}/familias/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Authorization": `Bearer ${token}`
       }
     });
 
-    // Carregar lista ao abrir a página
-    carregarLista("listaFamilias", "familias");
-  </script>
+    if (!res.ok) {
+      const err = await res.json();
+      alert(err.message || "Erro ao excluir ❌");
+      return;
+    }
+
+    alert("Excluído com sucesso ✅");
+    carregarFamilias();
+
+  } catch (err) {
+    console.error(err);
+    alert("Erro de conexão");
+  }
+}
+
+/* =========================
+   BUSCA
+========================= */
+document.getElementById("pesquisaFamilias").addEventListener("input", async (e) => {
+
+  const termo = e.target.value.toLowerCase().trim();
+
+  try {
+    const res = await fetch(`${API_URL}/familias`);
+
+    if (!res.ok) throw new Error("Erro na busca");
+
+    const data = await res.json();
+
+    const filtradas = data.filter(f =>
+      (f.nomeFamilia || "").toLowerCase().includes(termo) ||
+      (f.endereco || "").toLowerCase().includes(termo)
+    );
+
+    const lista = document.getElementById("listaFamilias");
+    lista.innerHTML = "";
+
+    if (!filtradas.length) {
+      lista.innerHTML = "<li>Nenhuma família encontrada 🔎</li>";
+      return;
+    }
+
+    filtradas.forEach(f => renderFamilia(f, lista));
+
+  } catch (err) {
+    console.error(err);
+    alert("Erro ao buscar famílias ❌");
+  }
+});
+
+</script>
+
 </body>
 </html>
