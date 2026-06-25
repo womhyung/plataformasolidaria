@@ -16,7 +16,7 @@ router.post("/", async (req, res) => {
 // READ - listar todas as entregas
 router.get("/", async (req, res) => {
   try {
-    const entregas = await Entrega.find().populate("doacaoId"); 
+    const entregas = await Entrega.find();
     res.json(entregas);
   } catch (err) {
     res.status(500).json({ error: err.message });
