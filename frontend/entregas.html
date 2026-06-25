@@ -28,9 +28,12 @@
 
     <form id="formEntrega">
 
-      <input type="text" name="voluntario" placeholder="Doador responsável" required>
+      <input type="text" name="voluntario" placeholder="Nome do doador" required>
+
       <input type="text" name="familiaDestino" placeholder="Família destino" required>
+
       <input type="text" name="alimentoEntregue" placeholder="Alimento entregue" required>
+
       <input type="number" name="quantidade" placeholder="Quantidade" required>
 
       <button type="submit">Salvar</button>
@@ -51,26 +54,14 @@
 
 const API_URL = "https://plataformasolidaria.onrender.com";
 
+let editandoId = null;
+
 /* =========================
    AUTH
 ========================= */
 function logout() {
   localStorage.removeItem("usuarioLogado");
-  localStorage.removeItem("token");
   window.location.href = "login.html";
-}
-
-/* =========================
-   ESTADO
-========================= */
-let editandoId = null;
-
-/* =========================
-   TOKEN
-========================= */
-function getToken() {
-  const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
-  return usuario?.token;
 }
 
 /* =========================
@@ -83,11 +74,6 @@ async function carregarEntregas() {
 
     const lista = document.getElementById("listaEntregas");
     lista.innerHTML = "";
-
-    if (!data.length) {
-      lista.innerHTML = "<li>Nenhuma entrega cadastrada</li>";
-      return;
-    }
 
     data.forEach(e => renderEntrega(e, lista));
 
@@ -102,8 +88,7 @@ async function carregarEntregas() {
 function renderEntrega(e, lista) {
   const li = document.createElement("li");
 
-  li.textContent =
-    `${e.voluntario} | ${e.familiaDestino} | ${e.alimentoEntregue} | ${e.quantidade}`;
+  li.textContent = `${e.voluntario} | ${e.familiaDestino} | ${e.alimentoEntregue} | ${e.quantidade}`;
 
   const btnEditar = document.createElement("button");
   btnEditar.textContent = "Editar";
@@ -126,7 +111,6 @@ document.getElementById("formEntrega").addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const form = e.target;
-  const token = getToken();
 
   const dados = {
     voluntario: form.elements["voluntario"].value,
@@ -148,19 +132,17 @@ document.getElementById("formEntrega").addEventListener("submit", async (e) => {
     const res = await fetch(url, {
       method,
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
+        "Content-Type": "application/json"
       },
       body: JSON.stringify(dados)
     });
 
     if (!res.ok) {
-      const err = await res.json();
-      alert(err.message || "Erro ao salvar ❌");
+      alert("Erro ao salvar ❌");
       return;
     }
 
-    alert(editandoId ? "Atualizado com sucesso ✅" : "Cadastrado com sucesso ✅");
+    alert(editandoId ? "Atualizado ✅" : "Criado ✅");
 
     form.reset();
     editandoId = null;
@@ -169,7 +151,7 @@ document.getElementById("formEntrega").addEventListener("submit", async (e) => {
     carregarEntregas();
 
   } catch (err) {
-    console.error("Erro no cadastro:", err);
+    console.error(err);
   }
 });
 
@@ -180,12 +162,13 @@ function editarEntrega(e) {
   editandoId = e._id;
 
   const form = document.getElementById("formEntrega");
+
   document.getElementById("tituloForm").textContent = "Editar Entrega";
 
-  form.elements["voluntario"].value = e.voluntario || "";
-  form.elements["familiaDestino"].value = e.familiaDestino || "";
-  form.elements["alimentoEntregue"].value = e.alimentoEntregue || "";
-  form.elements["quantidade"].value = e.quantidade || "";
+  form.elements["voluntario"].value = e.voluntario;
+  form.elements["familiaDestino"].value = e.familiaDestino;
+  form.elements["alimentoEntregue"].value = e.alimentoEntregue;
+  form.elements["quantidade"].value = e.quantidade;
 }
 
 /* =========================
@@ -204,19 +187,13 @@ function cancelarEdicao() {
    EXCLUIR
 ========================= */
 async function excluirEntrega(id) {
-  const token = getToken();
-
   try {
     const res = await fetch(`${API_URL}/entregas/${id}`, {
-      method: "DELETE",
-      headers: {
-        "Authorization": `Bearer ${token}`
-      }
+      method: "DELETE"
     });
 
     if (!res.ok) {
-      const err = await res.json();
-      alert(err.message || "Erro ao excluir ❌");
+      alert("Erro ao excluir ❌");
       return;
     }
 
@@ -246,11 +223,6 @@ document.getElementById("pesquisaEntregas").addEventListener("input", async (e) 
 
   const lista = document.getElementById("listaEntregas");
   lista.innerHTML = "";
-
-  if (!filtradas.length) {
-    lista.innerHTML = "<li>Nenhuma entrega encontrada 🔎</li>";
-    return;
-  }
 
   filtradas.forEach(e => renderEntrega(e, lista));
 });
