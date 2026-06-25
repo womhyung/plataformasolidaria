@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>Login - Plataforma Solidária</title>
   <link rel="stylesheet" href="style.css">
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -11,6 +12,7 @@
       margin: 0;
       padding: 0;
     }
+
     nav {
       background-color: #fff;
       border-bottom: 1px solid #dbdbdb;
@@ -23,22 +25,26 @@
       width: 100%;
       z-index: 1000;
     }
+
     nav h2 {
       margin: 0;
       font-size: 20px;
       color: #0095f6;
     }
+
     nav .links a {
       margin-left: 15px;
       text-decoration: none;
       color: #333;
       font-weight: bold;
     }
+
     nav .search-box input {
       padding: 6px;
       border: 1px solid #dbdbdb;
       border-radius: 4px;
     }
+
     .login-container {
       background: #fff;
       border: 1px solid #dbdbdb;
@@ -46,14 +52,16 @@
       width: 350px;
       text-align: center;
       border-radius: 8px;
-      margin: 140px auto; /* espaço abaixo do navbar */
+      margin: 140px auto;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
+
     .login-container h1 {
       font-size: 24px;
       margin-bottom: 20px;
       color: #333;
     }
+
     .login-container input {
       width: 100%;
       padding: 10px;
@@ -61,6 +69,7 @@
       border: 1px solid #dbdbdb;
       border-radius: 4px;
     }
+
     .login-container button {
       width: 100%;
       padding: 10px;
@@ -71,15 +80,19 @@
       font-weight: bold;
       cursor: pointer;
     }
+
     .login-container button:hover {
       background-color: #0077cc;
     }
   </style>
 </head>
+
 <body>
-  <!-- Navbar completo -->
+
+  <!-- NAVBAR -->
   <nav>
     <h2>Plataforma Solidária</h2>
+
     <div class="links">
       <a href="doacoes.html">Doações</a>
       <a href="instituicoes.html">Instituições</a>
@@ -88,14 +101,16 @@
       <a href="perfil.html">Perfil</a>
       <a href="logout.html">Logout</a>
     </div>
+
     <div class="search-box">
       <input type="text" id="searchInput" placeholder="Pesquisar...">
     </div>
   </nav>
 
-  <!-- Login -->
+  <!-- LOGIN -->
   <div class="login-container">
     <h1>Login</h1>
+
     <form id="formLogin">
       <input type="email" name="email" placeholder="Email" required>
       <input type="password" name="senha" placeholder="Senha" required>
@@ -106,17 +121,18 @@
   <script>
     const API_URL = "https://plataformasolidaria.onrender.com";
 
-    // Pesquisa com Enter
+    // 🔎 Pesquisa (placeholder)
     document.getElementById("searchInput").addEventListener("keypress", e => {
       if (e.key === "Enter") {
         e.preventDefault();
         alert("Pesquisar por: " + e.target.value);
-        // Aqui você pode implementar a busca real
       }
     });
 
+    // 🔐 LOGIN
     document.getElementById("formLogin").addEventListener("submit", async (e) => {
       e.preventDefault();
+
       const email = e.target.email.value.trim();
       const senha = e.target.senha.value.trim();
 
@@ -134,14 +150,13 @@
           return;
         }
 
-        // Salva tudo em um único objeto para ser usado no doacoes.html
-        localStorage.setItem("usuarioLogado", JSON.stringify({
-          ...data.user,
-          token: data.token
-        }));
+        // ✅ MELHOR PRÁTICA: separar token e user
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
 
+        console.log("Login realizado com sucesso:", data);
 
-        // Redireciona conforme o tipo de usuário
+        // 🔀 redirecionamento por tipo de usuário
         switch (data.user.role) {
           case "admin":
             window.location.href = "admin.html";
@@ -156,13 +171,15 @@
             window.location.href = "doador.html";
             break;
           default:
-            window.location.href = "perfil.html"; // fallback
+            window.location.href = "perfil.html";
         }
+
       } catch (err) {
         console.error("❌ Erro na requisição:", err);
         alert("Erro de conexão com o servidor");
       }
     });
   </script>
+
 </body>
 </html>
