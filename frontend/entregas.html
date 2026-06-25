@@ -34,8 +34,6 @@
 
       <input type="text" name="alimentoEntregue" placeholder="Alimento entregue" required>
 
-      <input type="number" name="quantidade" placeholder="Quantidade entregue" required>
-
       <button type="submit">Salvar</button>
       <button type="button" onclick="cancelarEdicao()">Cancelar</button>
 
@@ -84,7 +82,7 @@ async function carregarEntregas() {
     data.forEach(e => renderEntrega(e, lista));
 
   } catch (err) {
-    console.error("Erro ao carregar entregas:", err);
+    console.error(err);
   }
 }
 
@@ -95,7 +93,7 @@ function renderEntrega(e, lista) {
   const li = document.createElement("li");
 
   li.textContent =
-    `${e.voluntario} | ${e.familiaDestino} | ${e.alimentoEntregue} | ${e.quantidade}`;
+    `${e.voluntario} | ${e.familiaDestino} | ${e.alimentoEntregue}`;
 
   const btnEditar = document.createElement("button");
   btnEditar.textContent = "Editar";
@@ -123,8 +121,7 @@ document.getElementById("formEntrega").addEventListener("submit", async (e) => {
   const dados = {
     voluntario: form.elements["voluntario"].value,
     familiaDestino: form.elements["familiaDestino"].value,
-    alimentoEntregue: form.elements["alimentoEntregue"].value,
-    quantidade: Number(form.elements["quantidade"].value)
+    alimentoEntregue: form.elements["alimentoEntregue"].value
   };
 
   try {
@@ -162,7 +159,7 @@ document.getElementById("formEntrega").addEventListener("submit", async (e) => {
     carregarEntregas();
 
   } catch (err) {
-    console.error("Erro no salvamento:", err);
+    console.error(err);
     alert("Erro de conexão");
   }
 });
@@ -179,7 +176,6 @@ function editarEntrega(e) {
   form.elements["voluntario"].value = e.voluntario || "";
   form.elements["familiaDestino"].value = e.familiaDestino || "";
   form.elements["alimentoEntregue"].value = e.alimentoEntregue || "";
-  form.elements["quantidade"].value = e.quantidade || "";
 }
 
 /* =========================
@@ -218,31 +214,9 @@ async function excluirEntrega(id) {
     carregarEntregas();
 
   } catch (err) {
-    console.error("Erro ao excluir:", err);
+    console.error(err);
   }
 }
-
-/* =========================
-   BUSCA
-========================= */
-document.getElementById("pesquisaEntregas").addEventListener("input", async (e) => {
-
-  const termo = e.target.value.toLowerCase();
-
-  const res = await fetch(`${API_URL}/entregas`);
-  const data = await res.json();
-
-  const filtradas = data.filter(e =>
-    (e.voluntario || "").toLowerCase().includes(termo) ||
-    (e.familiaDestino || "").toLowerCase().includes(termo) ||
-    (e.alimentoEntregue || "").toLowerCase().includes(termo)
-  );
-
-  const lista = document.getElementById("listaEntregas");
-  lista.innerHTML = "";
-
-  filtradas.forEach(e => renderEntrega(e, lista));
-});
 
 /* INIT */
 carregarEntregas();
