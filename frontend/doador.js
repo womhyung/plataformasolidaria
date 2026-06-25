@@ -17,7 +17,7 @@ function logout() {
 async function carregarDoacoes() {
   const token = JSON.parse(localStorage.getItem("usuarioLogado"))?.token;
 
-  const res = await fetch("/doacoes/minhas", {
+  const res = await fetch(`${API_URL}/doacoes/minhas`, {
     headers: { Authorization: `Bearer ${token}` }
   });
 
